@@ -68,9 +68,9 @@ confile est un fichier(json) qui peut contenir
     "login": "le login a simuler",
     "password": "le passwore du compte a simmuler",
     "app_client_id": "dc",
-    "app_client_secret": "dDmLFnaDeMhWHcElIFnNodqXH5/5CvD0R3Nt4vtEN4Y",
+    "app_client_secret": "password",
     "dc_client_id": "dc",
-    "dc_client_secret": "dDmLFnaDeMhWHcElIFnNodqXH5/5CvD0R3Nt4vtEN4Y",
+    "dc_client_secret": "password",
     "kernelBaseUrl": "https://accounts.ozwillo-dev.eu",
     "redirect_uri" : "https://data.ozwillo-dev.eu/dc/playground/token",
     "datacoreTestUrl": "https://data.ozwillo-dev.eu/dc/type/pli:city_0"

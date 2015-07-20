@@ -1,0 +1,14 @@
+{ 
+    "login": "youraccount@ozwillo-dev.eu",
+    "password": "thepassordoftheaccount",
+    "app_client_id": "idofclient",
+    "app_client_secret": "",
+    "dc_client_id": "",
+    "dc_client_secret": "",
+    "kernelBaseUrl": "https://accounts.ozwillo-dev.eu",
+    "redirect_uri" : "http://localhost:10000/callback",
+    "datacoreTestUrl": "https://data.ozwillo-dev.eu/",
+	 "datacoreUrl": "https://data.ozwillo-dev.eu/",
+	 "additionalScope" : "datacore email" 
+
+}

@@ -1,0 +1,30 @@
+{
+  "name": "OzwilloUtil",
+  "version": "0.1",
+  "description": "Some tool to use ozwillo, we can find Oauth2.0 authentification and datacore merge tool",
+  "author": "Benjamin <benjamin.girard@openwide.fr>",
+  "main": "OzwiloUtil.js",
+  //"repository": {
+ // "type": "git",
+  //"url": //"https://github.com/nodejitsu/browsenpm.org"
+//},
+
+  "keywords": [
+  "Ozwillo",
+  "Oauth",
+  "datacore"
+],
+  "dependencies": {
+    "util": "*",
+    "log4js": "*",
+    "request": "*",
+	 "cache-manager" : "*",
+	 "simple-oauth2" : "*",
+	 "mongoose" : "*"
+
+  },
+
+  "private": true,
+  "analyze": true,
+  "license": "GPL"
+}

@@ -15,7 +15,7 @@ var log4js = require('log4js');
 var log = log4js.getLogger();
 log.setLevel('DEBUG');
 var request = require('request');
-//require('request-debug')(request);
+require('request-debug')(request);
 var request = request.defaults({jar: true});
 var conf = require('./config.json');
 var cacheManager = require('cache-manager');
@@ -34,19 +34,22 @@ mo = module.exports = function(activate)
 	// - MongoServiceMerge : to load the merge service with mongo db
 	
 active=activate;
-active.Fakelogin = active.Fakelogin || false;	
+active.Fakelogin = active.Fakelogin || false;
+if(active.Fakelogin)
+active.Connection = true;
+else	
 active.Connection = active.Connection || false;	
 active.MongoServiceMerge = active.MongoServiceMerge || false;	
 
 log.debug('we have:'+util.inspect(active));	
 
-if(active.Fakelogin)
-{
-module.exports.Fakelogin = require('./Fakelogin')({log: log, conf:conf, request:request});
-}
 if(active.Connection)
 {
 module.exports.Connection = require('./ConnectionOzwillo')({log: log, conf:conf, request:request});
+}
+if(active.Fakelogin)
+{
+module.exports.Fakelogin = require('./Fakelogin')({log: log, conf:conf, request:request,Connection:module.exports.Connection});
 }
 if(active.MongoServiceMerge)
 	{
@@ -62,11 +65,10 @@ return module.exports;
 
 
 /**
-confile est un fichier(json) qui peut contenir
-
+confile is a json file like this:
 {
     "login": "le login a simuler",
-    "password": "le passwore du compte a simmuler",
+    "password": "password of account to connect",
     "app_client_id": "dc",
     "app_client_secret": "password",
     "dc_client_id": "dc",

@@ -10,9 +10,11 @@
 var log;
 var request 
 var conf;
-var authorization_uri;
 var oauth2;
 var util= require("util");
+var extend = require('extend');
+
+
 
 Connection = module.exports =function(obj)
 {
@@ -22,18 +24,9 @@ request=obj.request;
 conf=obj.conf;
 
 oauth2 = require('simple-oauth2')(GETconfOauth2());
-authorization_uri=GETauthorizeURL();
 	
 	return Connection;	
 };
-
-
-
-
-
-
-
-
 
 
 
@@ -59,24 +52,15 @@ function GETconfOauth2()
 
 function GETauthorizeURL()
 {
-	return oauth2.authCode.authorizeURL({
+	return {
 		  redirect_uri: conf.redirect_uri,
 		  response_type : 'code',
         scope : 'openid profile '+((conf.additionalScope) ? conf.additionalScope : "" ),
-        state : 'security_token%3D25%26url%3Dhttps%3A%2F%2Flocalhost%home',
-        nonce : '12',
+        state : conf.state | 'http://localhost/',
+        nonce : Math.round(Math.random()*Math.pow(10,15)) //to int
 		//prompt:"consent"
-		});
+		};
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -85,20 +69,20 @@ Connection.setconf = function(conff)
 	delete oauth2;
 	conf=conff;
 	oauth2 = require('simple-oauth2')(GETconfOauth2());
-	authorization_uri=GETauthorizeURL();
 }
 
 
-Connection.requestAuth = function(res)
+Connection.requestAuth = function(plus)
 {
 	
   // summary:
-  //     Call this funtion when you want tha a user to be connect
-  // res :
-  // to send responce to user : like expresse res.
+  //     this funtion return the url to redirect the user who want to be connected
+  // return the url and the nonce parameter 
 	
 	log.debug("demande d'autentification connection to ozwillo\n");
-	res.redirect(authorization_uri);
+	var tmp=GETauthorizeURL();
+	extend(tmp, plus);
+	return {url:oauth2.authCode.authorizeURL(tmp),nonce:tmp.nonce};
 };
 
 Connection.CallbackCode = function(req)
@@ -107,20 +91,18 @@ Connection.CallbackCode = function(req)
 			{
 			log.error("error");	
 			log.error(req.originalUrl);
-			return ;
+			return 0;
 			}
 	
 	 return req.query.code;
-	
-	
-	
+
 };
 Connection.getTokenOauth = function(code,callbackToken)
 {
 
 		  oauth2.authCode.getToken({
 			 code: code,
-			 redirect_uri: conf.redirect_uri, // 'https://data.ozwillo-dev.eu/dc/playground/token',
+			 redirect_uri: conf.redirect_uri,
 			  grant_type: 'authorization_code'
 			  
 		  }, saveToken);
@@ -128,9 +110,9 @@ Connection.getTokenOauth = function(code,callbackToken)
 		  function saveToken(error, result) {
 			 if (error) { log.error('Access Token Error', error.message,result);callbackToken(1,error.message); return; }
 
-			 token = oauth2.accessToken.create(result);
+			 var token = oauth2.accessToken.create(result);
 			   log.debug("token "+util.inspect(token));
-			  callbackToken(0,token.token.access_token,token.token.id_token);
+			  callbackToken(0,token.token.access_token,token.token.id_token,token);
 		  }
 
 
@@ -150,7 +132,7 @@ var tokenoauth =  oauth2.accessToken.create(tokenobj);
 
 	});
 	
-	redirect.redirect('https://accounts.ozwillo-dev.eu/a/logout?id_token_hint='+id_token+'&post_logout_redirect_uri='+conf.redirect_uri);
+	redirect.redirect(conf.kernelBaseUrl+'/a/logout?id_token_hint='+id_token+'&post_logout_redirect_uri='+conf.redirect_uri);
 	
 };
 

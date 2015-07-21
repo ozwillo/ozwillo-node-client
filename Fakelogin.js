@@ -21,6 +21,7 @@ const FirefoxHeader = {
 
     }; 
 
+
 FakeLogin = module.exports = function(obj)
 {
 
@@ -28,6 +29,7 @@ log=obj.log;
 request=obj.request;
 conf=obj.conf;
 Connection = obj.Connection;
+
 	return module.exports;
 };
 
@@ -65,10 +67,7 @@ FakeLogin.Fakelogin = function(callback) {
 
     }
   };
-	
 	extend(options.headers,FirefoxHeader);
-	
-	
   log.debug("login options : ", options);
   request(options, function(err, res, body) {
     if(err) {
@@ -134,7 +133,6 @@ FakeLogin.getCodeFromKernel = function(callback) {
 			 headers: {
 				 /*'Host': 'accounts.ozwillo-preprod.eu',*/
 				referer: Authrequest.url,
-				 
 			 },
 			 jar : true,
 				qsParseOptions:{indices: false},
@@ -163,7 +161,6 @@ FakeLogin.getCodeFromKernel = function(callback) {
 				});
 		  return;
 	  }
-	  
 	  ReponceAuth(err,res,body,callback);
 	  
 	  
@@ -214,14 +211,15 @@ FakeLogin.getToken_pure = function(code, callback) {
 	
 	    // summary:
     //     With the code we can recup the token
-
 	log.debug("AQUISITION DU TOKEN\n\n");
 
 	Connection.getTokenOauth(code, function(err, token,id_token,tokenobj) {
+
     if(err) {
      log.error("Remote error in getToken() : " + err);
       return;
     }
+
     log.debug("getToken body ", JSON.stringify(tokenobj,null,' '));
     callback(token);
   });	

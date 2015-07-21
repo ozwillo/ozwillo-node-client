@@ -10,10 +10,10 @@
 var log;
 var request 
 var conf;
+
 var oauth2;
 var util= require("util");
 var extend = require('extend');
-
 
 
 Connection = module.exports =function(obj)
@@ -27,7 +27,6 @@ oauth2 = require('simple-oauth2')(GETconfOauth2());
 	
 	return Connection;	
 };
-
 
 
 function GETconfOauth2()
@@ -60,8 +59,8 @@ function GETauthorizeURL()
         nonce : Math.round(Math.random()*Math.pow(10,15)) //to int
 		//prompt:"consent"
 		};
-}
 
+}
 
 
 Connection.setconf = function(conff)
@@ -113,6 +112,7 @@ Connection.getTokenOauth = function(code,callbackToken)
 			 var token = oauth2.accessToken.create(result);
 			   log.debug("token "+util.inspect(token));
 			  callbackToken(0,token.token.access_token,token.token.id_token,token);
+		
 		  }
 
 
@@ -131,9 +131,7 @@ var tokenoauth =  oauth2.accessToken.create(tokenobj);
 	log.debug("revoke token!!!");
 
 	});
-	
 	redirect.redirect(conf.kernelBaseUrl+'/a/logout?id_token_hint='+id_token+'&post_logout_redirect_uri='+conf.redirect_uri);
-	
 };
 
 

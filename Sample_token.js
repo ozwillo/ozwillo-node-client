@@ -5,7 +5,9 @@ var co = require('./OzwiloUtil')({Fakelogin:true});
 if (process.argv.length > 2) {
  co.setconf(process.argv[2]);
 }
+
 //and get the token thanks to closure...
+
 co.Fakelogin.getToken(function (token){
 
 co.getUserInfo(token,function(err,result)

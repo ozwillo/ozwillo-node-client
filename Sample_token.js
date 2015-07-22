@@ -8,8 +8,11 @@ if (process.argv.length > 2) {
 
 //and get the token thanks to closure...
 
-co.Fakelogin.getToken(function (token){
-
+co.Fakelogin.getToken(function (token,id_token){
+	
+console.log("token:"+token);
+console.log("idtoken:"+id_token);
+	
 co.getUserInfo(token,function(err,result)
 			{
 			if(err)return;
@@ -23,5 +26,4 @@ co.getUserInfo(token,function(err,result)
 });
 
 
-console.log("token:"+token);
 });

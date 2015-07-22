@@ -110,7 +110,6 @@ Connection.getTokenOauth = function(code,callbackToken)
 			 if (error) { log.error('Access Token Error', error.message,result);callbackToken(1,error.message); return; }
 
 			 var token = oauth2.accessToken.create(result);
-			   log.debug("token "+util.inspect(token));
 			  callbackToken(0,token.token.access_token,token.token.id_token,token);
 		
 		  }

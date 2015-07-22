@@ -9,6 +9,7 @@ var log;
 var request 
 var conf;
 var Connection;
+var util = require('util');
 var extend = require('extend');
 const FirefoxHeader = {
       'Accept-Encoding': 'gzip, deflate', // since Sept. 2014 else 500 error
@@ -68,15 +69,15 @@ FakeLogin.Fakelogin = function(callback) {
     }
   };
 	extend(options.headers,FirefoxHeader);
-  log.debug("login options : ", options);
+  //log.debug("login options : ", options);
   request(options, function(err, res, body) {
     if(err) {
       log.error("Remote error in login() : " + err);
       return;
     }
-	  log.debug("login code:"+res.statusCode);
-	 log.debug("login statusMessage:"+res.statusMessage);
-   log.debug("login res headers : ", res.headers);
+	 // log.debug("login code:"+res.statusCode);
+	// log.debug("login statusMessage:"+res.statusMessage);
+  // log.debug("login res headers : ", res.headers);
 
 	  
     callback();
@@ -108,7 +109,7 @@ FakeLogin.getCodeFromKernel = function(callback) {
 
 	extend(options.headers,FirefoxHeader);
 	
-	log.debug("getCodeFromKernel params : ", options);
+	//log.debug("getCodeFromKernel params : ", options);
   
   request(options, function(err, res, body) {
     // TODO approve if asked to
@@ -116,8 +117,8 @@ FakeLogin.getCodeFromKernel = function(callback) {
       log.error("Remote error getCodeFromKernel : " + err);
       return;
     }
- 	log.debug("getCodeFromKernel res headers: ", res.headers);
-	   log.debug("getCodeFromKernel code:"+res.statusCode);
+ //	log.debug("getCodeFromKernel res headers: ", res.headers);
+	   //log.debug("getCodeFromKernel code:"+res.statusCode);
 
 	  
 	  
@@ -141,7 +142,7 @@ FakeLogin.getCodeFromKernel = function(callback) {
 				_utf8: '☃', 
 				client_id: conf.app_client_id,
 				/*client_secret: conf.app_client_secret,*/
-				scope:  ('openid profile'+conf.additionalScope) .split(" "),
+				scope:  ('openid profile '+conf.additionalScope) .split(" "),
 				redirect_uri: conf.redirect_uri,
 				/*state: 'a',*/
 				'state':'security_token%253D25%2526url%253Dhttps%253A%252F%252Flocalhost%25home',
@@ -171,9 +172,9 @@ FakeLogin.getCodeFromKernel = function(callback) {
 						log.error("Remote error getCodeFromKernel : " + err);
 						return;
 					 }
-				log.debug("getCodeFromKernel res body: ", res.body);
+				//log.debug("getCodeFromKernel res body: ", res.body);
 
-			  log.debug("\n\n");
+			 // log.debug("\n\n");
 
 
 
@@ -194,7 +195,7 @@ FakeLogin.getCodeFromKernel = function(callback) {
 				return;
 			 }
 			 var code = location.substring(beforeLocationCodeIndex + beforeLocationCode.length);
-			 log.debug("getCodeFromKernel body: ", body);
+		//	 log.debug("getCodeFromKernel body: ", body);
 
 			 callback(code);
 	  }
@@ -211,7 +212,7 @@ FakeLogin.getToken_pure = function(code, callback) {
 	
 	    // summary:
     //     With the code we can recup the token
-	log.debug("AQUISITION DU TOKEN\n\n");
+	//log.debug("AQUISITION DU TOKEN\n\n");
 
 	Connection.getTokenOauth(code, function(err, token,id_token,tokenobj) {
 
@@ -220,8 +221,8 @@ FakeLogin.getToken_pure = function(code, callback) {
       return;
     }
 
-    log.debug("getToken body ", JSON.stringify(tokenobj,null,' '));
-    callback(token);
+    //log.debug("getToken body ", JSON.stringify(tokenobj,null,' '));
+    callback(token,id_token,tokenobj);
   });	
 									 
 };
@@ -236,12 +237,11 @@ FakeLogin.getToken = function(callback) {
 		 FakeLogin.getCodeFromKernel(
 			function (code){
 					
-					  FakeLogin.getToken_pure(code, function(tokenf) {           
-						 log.debug('\n**********TOKEN**********');
-						  log.debug(tokenf);
-						  log.debug('**********TOKEN**********\n');
-						  token=tokenf;
-						callback(token);
+					  FakeLogin.getToken_pure(code, function(token,id_token,tokenobj) {           
+						 log.debug('**********TOKEN**********');
+						  log.debug(util.inspect(tokenobj));
+						 log.debug('**********TOKEN**********\n');
+						callback(token,id_token,tokenobj);
 					});
 			});
 			});

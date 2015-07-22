@@ -72,23 +72,63 @@ MongoServiceMerge.AddDatacoreModel =  function(name,shema)
 }
 
 
+MongoServiceMerge.PostDataCore = function(model,data,callback)
+{
+	var datacore = {};
+	MongoServiceMerge.MongooseToDatacore(model,data,datacore);
+
+	
+	parent.Fakelogin.getToken(function (token){
+	
+	log.debug("POST:"+JSON.stringify(datacore));
+	log.debug('modelName:'+model.modelName);
+		OpenHour.OzwilloUtil.PostRequest(token,model.modelName,'','oasis.sandbox',JSON.stringify(data),function(err,body){
+		
+		if(err)console.log("err in post data datacore: "+err+" :"+body);
+		if(callback)
+		callback(err);
+		
+		});
+	});
+}
 
 
 
-
-function copyitem(model,from,to){
+function copyitem(model,from,to,todatacore){
 	model.schema.eachPath(
 		function(key)
 		{
 			if(key == '_id' || key=='__v' || key[0]=='_')
 				return;
-			to[key]=from[key];
-			log.debug(key+':'+from[key]);	
+			if(model.schema.paths[key].instance=='Mixed')
+			{
+				if(from[key])
+				{
+				if(todatacore)
+				to[key]=JSON.stringify(from[key]);
+				else
+				to[key]=JSON.parse(from[key]); 
+				}
+			}
+			else
+			{
+				if(from[key])
+				to[key]=from[key];
+			}
 
 		});
 }
 
-MongoServiceMerge.MergeData = function ()
+MongoServiceMerge.MongooseToDatacore= function(model,mongoose,datacore)
+{
+copyitem(model,mongoose,datacore,1);
+}
+MongoServiceMerge.DatacoreToMongoose = function(model,datacore,mongoose)
+{
+copyitem(model,datacore,mongoose,0);
+}
+
+MongoServiceMerge.MergeData = function (debug)
 {
 	
 	// summary: 
@@ -106,7 +146,7 @@ MongoServiceMerge.MergeData = function ()
 	/**/
 	/*	TODO */ 
 	
-	parent.FakeLogin.getToken(function (token){
+	parent.Fakelogin.getToken(function (token){
 	
 	log.debug('Merge data begin : '+DCModelList);	
 	for(var m of DCModelList)
@@ -117,9 +157,9 @@ MongoServiceMerge.MergeData = function ()
 		//var idModel=conf.datacoreUrl+'/dc/type/dcmo:model_0/'+m;
 
 		//on retrouve les donner corespondant au model
-		//TODO why YWRtaW46YWRtaW4 ??
+		//TODO ??
 		log.debug('Merge model :'+m+'\n');		
-		parent.GetRequestModel(token,m,'','sandbox',
+		parent.GetRequestModel(token,m,'','oasis.sandbox',
 			 function(err,dataCoreResource)
 			 {
 			if(err){return;} 
@@ -144,8 +184,14 @@ MongoServiceMerge.MergeData = function ()
 
 						var instance = new mondodbmodel();
 						
-						copyitem(mondodbmodel,r,instance);
 
+						MongoServiceMerge.DatacoreToMongoose(mondodbmodel,r,instance);
+						
+						if(debug)
+						{
+						log.debug(util.inspect(instance));
+						}
+						else
 						instance.save(function (err) {
 							if(err)
 								log.error(err);
@@ -157,12 +203,16 @@ MongoServiceMerge.MergeData = function ()
 					{
 						if(r['o:version']>datamongo['o:version'])//datacore plus ajour
 						{
-							log.debug('our resource not uptodate');
+							log.debug('our resource is older');
 
-							copyitem(mondodbmodel,r,datamongo);
-							
+							MongoServiceMerge.DatacoreToMongoose(mondodbmodel,r,instance);
+							if(debug)
+							{
+							log.debug(util.inspect(datamongo));
+							}
+							else
 							datamongo.save(function (err) {
-								log.error(err);
+								if(err)log.error(err);
 								return;
 							});
 						}
@@ -170,28 +220,26 @@ MongoServiceMerge.MergeData = function ()
 						{
 							log.debug('our resource is newer');	
 							var datalaunch =	{};
-							mondodbmodel.schema.eachPath(
-								function(key)
-								{
-									if(key == '_id' || key=='__v' || key[0]=='_')
-											return;
-									if(r[key]!=datamongo[key])
-										datalaunch[key]=datamongo[key];
 
-								});
-
+							MongoServiceMerge.MongooseToDatacore(mondodbmodel,datamongo,datalaunch);
+							
 							datalaunch['@id'] = r['@id'];
-							datalaunch['o:version']= datamongo['o:version'];
-
-							log.debug('we launch :'+util.inspect(datalaunch));	
-							parent.PutRequest(token,m,'',sandbox,JSON.stringify(),
+							datalaunch['o:version']= r['o:version'];
+							
+							log.debug('we launch :'+util.inspect(datalaunch)+"\n in  string: "+JSON.stringify(datalaunch));	
+						
+							
+							if(debug)
+							{
+							}
+							else	
+							parent.PutRequest(token,m,'','oasis.sandbox',JSON.stringify(datalaunch),
 														function(err,body)
 														{
-
+														if(err){log.error(err+" : "+body);return;}
+														log.debug(util.inspect(body));
 								return;
-							}
-
-													  );
+							});
 						}
 						else{
 							log.debug('our resource is uptodate');

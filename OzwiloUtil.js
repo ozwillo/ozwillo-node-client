@@ -15,7 +15,7 @@ var log4js = require('log4js');
 var log = log4js.getLogger();
 log.setLevel('DEBUG');
 var request = require('request');
-require('request-debug')(request);
+//require('request-debug')(request);
 var request = request.defaults({jar: true});
 var conf = require('./config.json');
 var cacheManager = require('cache-manager');
@@ -166,7 +166,7 @@ mo.getTokenInfo = function(token, callback) {
 		 callback(1,err);
       return;
     }
-    log.debug(res.headers+' '+res.statusCode+'\n'+res.statusMessage);
+    log.debug('getTokenInfo : '+util.inspect(res.headers)+' '+res.statusCode+' '+res.statusMessage);
      log.debug('Should display information about the Token:');
      log.debug(body+'\n');
      if(body!="")
@@ -187,18 +187,18 @@ function GetRequest_priv(Authorization,url,project,callback)
     headers: {
       'Authorization': Authorization,
       'Accept': 'application/json',
-		'X-Datacore-Project' : 'oasis.'+project
+		'X-Datacore-Project' : project
     }
   }, 
 		function(err, res, body) {
 		 if(err) {
 			log.error("Remote error in GetRequest() : " + err);
-			callback(true,'');
+			callback(err,'');
 		 }
 		 if(res.statusCode == 404 || res.statusCode == 400)
 		 {
 		 log.error("Bad request : " + res.body);
-			 callback(true,JSON.parse(body));
+			 callback(res,JSON.parse(body));
 		 }
 		 else if(res.statusCode == 200)
 		 callback(false,JSON.parse(body));
@@ -276,7 +276,8 @@ function PostRequest_priv(token,url,project,data,callback)
     headers: {
       'Authorization': 'Bearer ' + token,
       'Accept': 'application/json',
-		'X-Datacore-Project' : 'oasis.'+project
+		'X-Datacore-Project' : project,
+		'content-type': 'application/json',
     },
 	 body : data 
   }, 
@@ -292,7 +293,11 @@ function PostRequest_priv(token,url,project,data,callback)
 		 }
 		 else if(res.statusCode == 201)
 		 callback(false,JSON.parse(body));
-
+	  	else 
+		{
+				log.error("Bad Code : " + res.statusCode);
+			 callback('Bad Code '+res.statusCode,body);
+		}
   				});
 };
 
@@ -311,6 +316,9 @@ PostRequest_priv(token,'/dc/type/dcmo:model_0/'+url+'/'+'?'+arg,project,data,cal
 function PutRequest_priv(auth,url,project,data,callback)
 {
 
+	log.debug("make PUT on :"+conf.datacoreTestUrl+url);
+	log.debug("make PUT on with projet :"+project);
+	log.debug("AND DATA:"+data);
   request({
     rejectUnauthorized: false,
     url: conf.datacoreTestUrl+url,
@@ -318,23 +326,28 @@ function PutRequest_priv(auth,url,project,data,callback)
     headers: {
       'Authorization': auth,
       'Accept': 'application/json',
-		'X-Datacore-Project' : 'oasis.'+project
+		'content-type': 'application/json',
+		'X-Datacore-Project' : project
     },
 	 body : data 
   }, 
 			 function(err, res, body) {
     if(err) {
       log.error("Remote error in PutRequest() : " + err);
-			callback(true,'');
+			callback(err,'');
 		 }
 		 if(res.statusCode == 500 || res.statusCode == 409 || res.statusCode == 404 || res.statusCode == 400)
 		 {
 		 log.error("Bad request : " + body);
-			 callback(true,JSON.parse(body));
+			 callback('Bad request',body);
 		 }
 		 else if(res.statusCode == 200)
 		 callback(false,JSON.parse(body));
-
+	  	else 
+		{
+				log.error("Bad Code : " + res.statusCode);
+			 callback('Bad Code '+res.statusCode,body);
+		}
   				});
 
   		

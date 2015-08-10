@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Fakelogin.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="ConnectionOzwillo.html">
+                  ConnectionOzwillo.js
+                </a>
+              
+                
+                <a class="source" href="Fakelogin.html">
+                  Fakelogin.js
+                </a>
+              
+                
+                <a class="source" href="MongoMerge.html">
+                  MongoMerge.js
+                </a>
+              
+                
+                <a class="source" href="OzwiloUtil.html">
+                  OzwiloUtil.js
+                </a>
+              
+                
+                <a class="source" href="README.html">
+                  README.md
+                </a>
+              
+                
+                <a class="source" href="Sample_token.html">
+                  Sample_token.js
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>Fakelogin.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p>description : 
+This module is here to connect your app to Ozwillo with your app acount : ie is util to make syncronisation between the datacore and your database
+look at config.json</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+
+<span class="hljs-keyword">var</span> regCode = <span class="hljs-regexp">/code:&lt;\/strong&gt; (\w+)&lt;\/p&gt;/g</span>;
+
+<span class="hljs-keyword">var</span> log;
+<span class="hljs-keyword">var</span> request 
+<span class="hljs-keyword">var</span> conf;
+<span class="hljs-keyword">var</span> Connection;
+<span class="hljs-keyword">var</span> util = <span class="hljs-built_in">require</span>(<span class="hljs-string">'util'</span>);
+<span class="hljs-keyword">var</span> extend = <span class="hljs-built_in">require</span>(<span class="hljs-string">'extend'</span>);
+<span class="hljs-keyword">const</span> FirefoxHeader = {
+      <span class="hljs-string">'Accept-Encoding'</span>: <span class="hljs-string">'gzip, deflate'</span>, <span class="hljs-comment">// since Sept. 2014 else 500 error</span>
+		 <span class="hljs-string">'User-Agent'</span>: <span class="hljs-string">'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:38.0) Gecko/20100101 Firefox/38.0'</span>,
+  
+		 <span class="hljs-string">'Connection'</span> : <span class="hljs-string">'keep-alive'</span>,
+		 <span class="hljs-string">'Content-Type'</span> : <span class="hljs-string">'application/x-www-form-urlencoded'</span>,
+		 <span class="hljs-string">'Accept'</span> :  <span class="hljs-string">'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'</span>,
+<span class="hljs-string">'Accept-Language'</span>: <span class="hljs-string">'fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3'</span>
+
+    }; 
+
+
+FakeLogin = <span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">obj</span>)
+</span>{
+
+log=obj.log;
+request=obj.request;
+conf=obj.conf;
+Connection = obj.Connection;
+
+	<span class="hljs-keyword">return</span> <span class="hljs-built_in">module</span>.exports;
+};
+
+FakeLogin.setconf = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">conff</span>) </span>{
+	conf=conff;
+}
+
+FakeLogin.Fakelogin = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">callback</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>summary:
+    This function simule a login on ozwillo acount.it is util to connet a app user to have acess to datacore and test.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	
+	
+ <span class="hljs-comment">/* var authUrl = conf.kernelBaseUrl + '/a/auth?response_type=code'
+    + '&amp;client_id=' + conf.app_client_id
+    + '&amp;scope=openid%20datacore%20profile%20email'
+    ;*/</span>
+
+  <span class="hljs-keyword">var</span> options = {
+    rejectUnauthorized: <span class="hljs-literal">false</span>,
+    url: conf.kernelBaseUrl + <span class="hljs-string">'/a/login'</span>,<span class="hljs-comment">//TEST</span>
+    method: <span class="hljs-string">'POST'</span>,
+    followAllRedirects: <span class="hljs-literal">false</span>,<span class="hljs-comment">//false ??? // let redirect so that cookie will be stored (from Set-Cookie response header)</span>
+    headers: {
+      referer: conf.kernelBaseUrl + <span class="hljs-string">'/a/login'</span>,
+    },
+    jar: <span class="hljs-literal">true</span>, <span class="hljs-comment">// store cookie in cookie.txt</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>/followRedirect: false, // not to uselessly go to ‘continue’ URL</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    form: {
+		_utf8: <span class="hljs-string">'☃'</span>,</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>‘continue’: authUrl,</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		hl:<span class="hljs-string">'fr-FR'</span>,
+      u : conf.login,
+      pwd: conf.password,</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>‘continue’: conf.kernelBaseUrl,</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+    }
+  };
+	extend(options.headers,FirefoxHeader);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>log.debug(“login options : “, options);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  request(options, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res, body</span>) </span>{
+    <span class="hljs-keyword">if</span>(err) {
+      log.error(<span class="hljs-string">"Remote error in login() : "</span> + err);
+      <span class="hljs-keyword">return</span>;
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>log.debug(“login code:”+res.statusCode);
+log.debug(“login statusMessage:”+res.statusMessage);
+log.debug(“login res headers : “, res.headers);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+	  
+    callback();
+  });
+};
+
+
+
+FakeLogin.getCodeFromKernel = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">callback</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>summary:
+    This funtion can get the Code from the kernel see OAuth2.0</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		
+	<span class="hljs-keyword">var</span> Authrequest = Connection.requestAuth({prompt:<span class="hljs-string">"consent"</span>});
+	<span class="hljs-keyword">var</span> nonce  = Authrequest.nonce; 
+	
+	
+	
+  <span class="hljs-keyword">var</span> options = {
+    rejectUnauthorized: <span class="hljs-literal">false</span>,
+    url: Authrequest.url,
+    method: <span class="hljs-string">'GET'</span>,
+    followAllRedirects: <span class="hljs-literal">false</span>, <span class="hljs-comment">// don't redirect to be able to extract code from Location header</span>
+    headers: {
+		 <span class="hljs-comment">/*'Host': 'accounts.ozwillo-preprod.eu',*/</span>
+      referer: conf.kernelBaseUrl + <span class="hljs-string">'/a/login'</span>,
+    },
+	 jar : <span class="hljs-literal">true</span>
+  };
+
+	extend(options.headers,FirefoxHeader);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>log.debug(“getCodeFromKernel params : “, options);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  
+  request(options, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res, body</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>TODO approve if asked to</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span>(err) {
+      log.error(<span class="hljs-string">"Remote error getCodeFromKernel : "</span> + err);
+      <span class="hljs-keyword">return</span>;
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>log.debug(“getCodeFromKernel res headers: “, res.headers);
+log.debug(“getCodeFromKernel code:”+res.statusCode);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+	  
+	  
+	  <span class="hljs-keyword">if</span>(body.indexOf(<span class="hljs-string">"/a/auth/approve"</span>)!=-<span class="hljs-number">1</span>)
+	  {
+		  log.debug(<span class="hljs-string">"Valide authorisation"</span>);
+		  
+			<span class="hljs-keyword">var</span> options2 = {
+			 rejectUnauthorized: <span class="hljs-literal">false</span>,
+			 url: conf.kernelBaseUrl + <span class="hljs-string">'/a/auth/approve'</span>,
+			 method: <span class="hljs-string">'POST'</span>,
+			 followAllRedirects: <span class="hljs-literal">false</span>, <span class="hljs-comment">// don't redirect to be able to extract code from Location header</span>
+			 headers: {
+				 <span class="hljs-comment">/*'Host': 'accounts.ozwillo-preprod.eu',*/</span>
+				referer: Authrequest.url,
+			 },
+			 jar : <span class="hljs-literal">true</span>,
+				qsParseOptions:{indices: <span class="hljs-literal">false</span>},
+				qsStringifyOptions:{indices: <span class="hljs-literal">false</span>},
+			 form: {
+				_utf8: <span class="hljs-string">'☃'</span>, 
+				client_id: conf.app_client_id,
+				<span class="hljs-comment">/*client_secret: conf.app_client_secret,*/</span>
+				scope:  (<span class="hljs-string">'openid profile '</span>+conf.additionalScope) .split(<span class="hljs-string">" "</span>),
+				redirect_uri: conf.redirect_uri,
+				<span class="hljs-comment">/*state: 'a',*/</span>
+				<span class="hljs-string">'state'</span>:<span class="hljs-string">'security_token%253D25%2526url%253Dhttps%253A%252F%252Flocalhost%25home'</span>,
+				nonce:nonce
+			 }
+
+		  };	  
+		  
+		  extend(options2.headers,FirefoxHeader);
+		  
+
+				request(options2, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res, body</span>) </span>{
+					
+					
+					ReponceAuth(err,res,body,callback);
+					
+				});
+		  <span class="hljs-keyword">return</span>;
+	  }
+	  ReponceAuth(err,res,body,callback);
+	  
+	  
+	  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">ReponceAuth</span>(<span class="hljs-params">err,res,body,callback</span>)
+	  </span>{
+		  
+		  <span class="hljs-keyword">if</span>(err) {
+						log.error(<span class="hljs-string">"Remote error getCodeFromKernel : "</span> + err);
+						<span class="hljs-keyword">return</span>;
+					 }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>log.debug(“getCodeFromKernel res body: “, res.body);</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>log.debug(“\n\n”);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+
+
+
+			 <span class="hljs-keyword">var</span> location = res.headers.location;
+			 <span class="hljs-keyword">if</span> (!location) {
+				<span class="hljs-keyword">if</span> (body.indexOf(<span class="hljs-string">"&lt;html&gt;"</span>) != -<span class="hljs-number">1</span> &amp;&amp; body.indexOf(<span class="hljs-string">"Authorize"</span>) != -<span class="hljs-number">1</span>) {
+				  log.error(<span class="hljs-string">"Must authorize first, browse to URL..."</span>, body);
+				  <span class="hljs-keyword">return</span>;
+				}
+				log.error(<span class="hljs-string">"Bad response getCodeFromKernel (no location) : "</span>, res.body);
+				<span class="hljs-keyword">return</span>;
+			 }
+			 <span class="hljs-keyword">var</span> beforeLocationCode = <span class="hljs-string">"code="</span>;
+			 <span class="hljs-keyword">var</span> beforeLocationCodeIndex = location.indexOf(beforeLocationCode);
+			 <span class="hljs-keyword">if</span> (location.indexOf(beforeLocationCode) === -<span class="hljs-number">1</span>) {
+				log.error(<span class="hljs-string">"Bad response getCodeFromKernel, location without code : "</span>+ location);
+				<span class="hljs-keyword">return</span>;
+			 }
+			 <span class="hljs-keyword">var</span> code = location.substring(beforeLocationCodeIndex + beforeLocationCode.length);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p> log.debug(“getCodeFromKernel body: “, body);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+			 callback(code);
+	  }
+	  
+	  
+
+  });
+};
+
+
+
+
+FakeLogin.getToken_pure = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">code, callback</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>summary:
+    With the code we can recup the token
+log.debug(“AQUISITION DU TOKEN\n\n”);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+	Connection.getTokenOauth(code, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, token,id_token,tokenobj</span>) </span>{
+
+    <span class="hljs-keyword">if</span>(err) {
+     log.error(<span class="hljs-string">"Remote error in getToken() : "</span> + err);
+      <span class="hljs-keyword">return</span>;
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>log.debug(“getToken body “, JSON.stringify(tokenobj,null,’ ‘));</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    callback(token,id_token,tokenobj);
+  });	
+									 
+};
+
+
+FakeLogin.getToken = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">callback</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>summary:
+    This funtion recup a token and send it to callback this is the main function of FakeLogin</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	
+	FakeLogin.Fakelogin(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>)</span>{
+		 FakeLogin.getCodeFromKernel(
+			<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">code</span>)</span>{
+					
+					  FakeLogin.getToken_pure(code, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token,id_token,tokenobj</span>) </span>{           
+						 log.debug(<span class="hljs-string">'**********TOKEN**********'</span>);
+						  log.debug(util.inspect(tokenobj));
+						 log.debug(<span class="hljs-string">'**********TOKEN**********\n'</span>);
+						callback(token,id_token,tokenobj);
+					});
+			});
+			});
+}
+
+<span class="hljs-keyword">var</span> token_keepmind = <span class="hljs-number">0</span>;
+FakeLogin.getTokenKeepInMind = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">callback</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>summary:
+    This funtion recup a token keep in memory for next call</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	
+	<span class="hljs-keyword">if</span>(token_keepmind &amp;&amp; token_keepmind.expired())
+	token_keepmind=<span class="hljs-number">0</span>;
+	
+	<span class="hljs-keyword">if</span>(!token_keepmind)
+	{
+		FakeLogin.getToken(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token,id_token,tokenobj</span>)</span>{
+		
+		token_keepmind=tokenobj;
+		callback(token,id_token,tokenobj);
+		}); 
+	
+		<span class="hljs-keyword">return</span>;
+	}
+	<span class="hljs-keyword">else</span>{
+	callback(token_keepmind.token.access_token,token_keepmind.token.id_token,token_keepmind);
+	}
+	
+}</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

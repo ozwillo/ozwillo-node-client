@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>ConnectionOzwillo.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="ConnectionOzwillo.html">
+                  ConnectionOzwillo.js
+                </a>
+              
+                
+                <a class="source" href="Fakelogin.html">
+                  Fakelogin.js
+                </a>
+              
+                
+                <a class="source" href="MongoMerge.html">
+                  MongoMerge.js
+                </a>
+              
+                
+                <a class="source" href="OzwiloUtil.html">
+                  OzwiloUtil.js
+                </a>
+              
+                
+                <a class="source" href="README.html">
+                  README.md
+                </a>
+              
+                
+                <a class="source" href="Sample_token.html">
+                  Sample_token.js
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>ConnectionOzwillo.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-comment">/*jslint node: true */</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>summary:
+  This module is here to manage the connection of a user on ozwillo is simply use oauth2-simple well configure with config.json</p>
+<p>how it work ?</p>
+<p>Firt the application want a user to be auttentified, see requestAuth() after ozwillo repond to  conf.redirect_uri you need to redirect this responce to CallbackCode() which return the code , with the code use getTokenOauth to have the token.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-keyword">var</span> log;
+<span class="hljs-keyword">var</span> request 
+<span class="hljs-keyword">var</span> conf;
+
+<span class="hljs-keyword">var</span> oauth2;
+<span class="hljs-keyword">var</span> util= <span class="hljs-built_in">require</span>(<span class="hljs-string">"util"</span>);
+<span class="hljs-keyword">var</span> extend = <span class="hljs-built_in">require</span>(<span class="hljs-string">'extend'</span>);
+
+
+Connection = <span class="hljs-built_in">module</span>.exports =<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">obj</span>)
+</span>{
+
+log=obj.log;
+request=obj.request;
+conf=obj.conf;
+
+oauth2 = <span class="hljs-built_in">require</span>(<span class="hljs-string">'simple-oauth2'</span>)(GETconfOauth2());
+	
+	<span class="hljs-keyword">return</span> Connection;	
+};
+
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">GETconfOauth2</span>(<span class="hljs-params"></span>)
+</span>{
+
+ <span class="hljs-keyword">return</span> {
+		  clientID: conf.app_client_id,
+		  clientSecret: conf.app_client_secret,
+		  site: conf.kernelBaseUrl,
+	     useBasicAuthorizationHeader : <span class="hljs-literal">true</span>,
+		  authorizationPath: <span class="hljs-string">'/a/auth'</span>,
+		  tokenPath: <span class="hljs-string">'/a/token'</span>,
+	 	  revocationPath:<span class="hljs-string">'a/revoke'</span>
+		};
+
+
+}
+
+
+
+
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">GETauthorizeURL</span>(<span class="hljs-params"></span>)
+</span>{
+	<span class="hljs-keyword">return</span> {
+		  redirect_uri: conf.redirect_uri,
+		  response_type : <span class="hljs-string">'code'</span>,
+        scope : <span class="hljs-string">'openid profile '</span>+((conf.additionalScope) ? conf.additionalScope : <span class="hljs-string">""</span> ),
+        state : conf.state | <span class="hljs-string">'http://localhost/'</span>,
+        nonce : <span class="hljs-built_in">Math</span>.round(<span class="hljs-built_in">Math</span>.random()*<span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>,<span class="hljs-number">15</span>)) <span class="hljs-comment">//to int</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>prompt:”consent”</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		};
+
+}
+
+
+Connection.setconf = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">conff</span>)
+</span>{
+	<span class="hljs-keyword">delete</span> oauth2;
+	conf=conff;
+	oauth2 = <span class="hljs-built_in">require</span>(<span class="hljs-string">'simple-oauth2'</span>)(GETconfOauth2());
+}
+
+
+Connection.requestAuth = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">plus</span>)
+</span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>summary:
+    this funtion return the url to redirect the user who want to be connected
+return the url and the nonce parameter </p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	
+	log.debug(<span class="hljs-string">"demande d'autentification connection to ozwillo\n"</span>);
+	<span class="hljs-keyword">var</span> tmp=GETauthorizeURL();
+	extend(tmp, plus);
+	<span class="hljs-keyword">return</span> {url:oauth2.authCode.authorizeURL(tmp),nonce:tmp.nonce};
+};
+
+Connection.CallbackCode = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req</span>)
+</span>{
+	<span class="hljs-keyword">if</span>(req.originalUrl.indexOf(<span class="hljs-string">"error"</span>)&gt;-<span class="hljs-number">1</span>)
+			{
+			log.error(<span class="hljs-string">"error"</span>);	
+			log.error(req.originalUrl);
+			<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+			}
+	
+	 <span class="hljs-keyword">return</span> req.query.code;
+
+};
+Connection.getTokenOauth = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">code,callbackToken</span>)
+</span>{
+
+		  oauth2.authCode.getToken({
+			 code: code,
+			 redirect_uri: conf.redirect_uri,
+			  grant_type: <span class="hljs-string">'authorization_code'</span>
+			  
+		  }, saveToken);
+
+		  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">saveToken</span>(<span class="hljs-params">error, result</span>) </span>{
+			 <span class="hljs-keyword">if</span> (error) { log.error(<span class="hljs-string">'Access Token Error'</span>, error.message,result);callbackToken(<span class="hljs-number">1</span>,error.message); <span class="hljs-keyword">return</span>; }
+
+			 <span class="hljs-keyword">var</span> token = oauth2.accessToken.create(result);
+			  callbackToken(<span class="hljs-number">0</span>,token.token.access_token,token.token.id_token,token);
+		
+		  }
+
+
+};
+Connection.logout = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token,id_token,redirect</span>)
+</span>{
+	log.debug(<span class="hljs-string">"log out !!!"</span>);
+<span class="hljs-keyword">var</span> tokenobj ={  
+ <span class="hljs-string">'access_token'</span>: token,
+  <span class="hljs-string">'id_token'</span>: id_token,
+  };
+
+<span class="hljs-keyword">var</span> tokenoauth =  oauth2.accessToken.create(tokenobj);
+	
+	tokenoauth.revoke(<span class="hljs-string">'access_token'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">error</span>) </span>{
+	log.debug(<span class="hljs-string">"revoke token!!!"</span>);
+
+	});
+	redirect.redirect(conf.kernelBaseUrl+<span class="hljs-string">'/a/logout?id_token_hint='</span>+id_token+<span class="hljs-string">'&amp;post_logout_redirect_uri='</span>+conf.redirect_uri);
+};</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

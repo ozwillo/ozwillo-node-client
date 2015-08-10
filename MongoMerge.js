@@ -1,9 +1,6 @@
 	// summary:
-	// this module offer funtionality to merger your data with dacaore data: we try to merge your mongodb base and dacorebase
-
-
-
-
+	// this module offer funtionality to merger your data with dacaore data:
+	// we try to merge your mongodb base and dacorebase
 
 
 var log;
@@ -13,6 +10,7 @@ var databaseload = false;
 var parent;
 var CronJob;
 var mongoose;
+var extend_mongoose;
 var util = require('util');
 var db ;
 MongoServiceMerge = module.exports = function(obj)
@@ -23,12 +21,10 @@ MongoServiceMerge = module.exports = function(obj)
 	conf=obj.conf;
 	parent = obj.parent;
 
-	/*CronJob = require('cron').CronJob;
-new CronJob('0 0 * * * *', function() {
-  MergeData();
-}, null, true, 'Europe/Paris');*/
 
 	mongoose = require('mongoose');
+	extend_mongoose = require('mongoose-schema-extend');
+	
 	//mongoose.connect('mongodb://'+(conf.databaseaddr || '127.0.0.1')+'/'+(conf.databasename || 'mongobase'));
 	mongoose.connect('mongodb://'+(conf.databaseaddr || '127.0.0.1')+'/'+(conf.databasename || 'mongobase'),function(err) {if (err) { throw err; }});
 
@@ -62,6 +58,12 @@ MongoServiceMerge.AddDatacoreModel =  function(name,shema)
 	//         must contain    '@id'   : { type: String ,unique:true,required:true}
 	// and  'o:version'    : Number 
 
+	if(!name)
+	{
+		log.error('AddDatacoreModel: must contain a name');
+		return;
+	}
+
 	if(DCModelList.lastIndexOf(name)==-1)
 	{
 		log.debug('add '+name+' to model')
@@ -72,26 +74,52 @@ MongoServiceMerge.AddDatacoreModel =  function(name,shema)
 }
 
 
-MongoServiceMerge.PostDataCore = function(model,data,callback)
+MongoServiceMerge.PostDataCore = function(token,model,data,callback)
 {
+	// This function convert your data (a object in mongoose) in datacore object and post it on datacore.  
+	//
+	callback = callback || function(){};
+	if(!model){log.error("Besoin d'un model"); callback("Need a model");return;  }
+	
 	var datacore = {};
 	MongoServiceMerge.MongooseToDatacore(model,data,datacore);
 
 	
-	parent.Fakelogin.getToken(function (token){
 	
 	log.debug("POST:"+JSON.stringify(datacore));
 	log.debug('modelName:'+model.modelName);
-		OpenHour.OzwilloUtil.PostRequest(token,model.modelName,'','oasis.sandbox',JSON.stringify(data),function(err,body){
+		parent.PostRequest(token,model.modelName,'','oasis.sandbox',JSON.stringify(datacore),function(err,body){
 		
-		if(err)console.log("err in post data datacore: "+err+" :"+body);
+		if(err)log.error("err in post data datacore: "+err+" :"+body);
 		if(callback)
 		callback(err);
 		
 		});
-	});
+	
 }
+MongoServiceMerge.PutDataCore = function(token,model,data,callback)
+{
+	// This function convert your data (a object in mongoose) in datacore object and PUT it on datacore.  
+	//
+	callback = callback || function(){};
+	if(!model){log.error("Besoin d'un model"); callback("Need a model");return;  }
+	
+	var datacore = {};
+	MongoServiceMerge.MongooseToDatacore(model,data,datacore);
 
+	
+	
+	log.debug("PUT:"+JSON.stringify(datacore));
+	log.debug('modelName:'+model.modelName);
+		parent.PutRequest(token,model.modelName,'','oasis.sandbox',JSON.stringify(datacore),function(err,body){
+		
+		if(err)log.error("err in Put data datacore: "+err+" :"+body);
+		if(callback)
+		callback(err);
+		
+		});
+	
+}
 
 
 function copyitem(model,from,to,todatacore){
@@ -121,10 +149,12 @@ function copyitem(model,from,to,todatacore){
 
 MongoServiceMerge.MongooseToDatacore= function(model,mongoose,datacore)
 {
+// convert a moogose object to datacore object
 copyitem(model,mongoose,datacore,1);
 }
 MongoServiceMerge.DatacoreToMongoose = function(model,datacore,mongoose)
 {
+// convert a datacore object to mongoose object	
 copyitem(model,datacore,mongoose,0);
 }
 
@@ -133,20 +163,16 @@ MongoServiceMerge.MergeData = function (debug)
 	
 	// summary: 
 	//         this funtion merga data with datacore
-	//				it list model add with AddDatacoreModel
-	//				and merge exiting data(it take the lastest vertion)
-	//          and crete in your database the data that exist on datacore
-	//  today we use developer accese on datacore it must be modified to use app acour and Fakelogin.
-	
-	
-	//  Warning the funtion do not create data on datacore on modify your database
+	//			it list model add with AddDatacoreModel
+	//			and merge exiting data we use verstion field
+	//  This funcion do not post data on datacore but only make update and postg on mongodb locale.
 	
 	
 	
 	/**/
 	/*	TODO */ 
 	
-	parent.Fakelogin.getToken(function (token){
+	parent.Fakelogin.getTokenKeepInMind(function (token){
 	
 	log.debug('Merge data begin : '+DCModelList);	
 	for(var m of DCModelList)
@@ -157,45 +183,53 @@ MongoServiceMerge.MergeData = function (debug)
 		//var idModel=conf.datacoreUrl+'/dc/type/dcmo:model_0/'+m;
 
 		//on retrouve les donner corespondant au model
-		//TODO ??
-		log.debug('Merge model :'+m+'\n');		
-		parent.GetRequestModel(token,m,'','oasis.sandbox',
+		
+		(function(m){
+		log.debug('Merge model :'+m+'\n');		//TODO MUST MUST THE INVERSE WE MUST "FOR" THE MONDODB and UPDATE DATACORE NOT FOR DATACORE 
+		parent.GetRequestModel(token,m,'limit=500','oasis.sandbox',
 			 function(err,dataCoreResource)
 			 {
 			if(err){return;} 
 
-			//log.debug('dacacoreresurce:'+util.inspect(dataCoreResource));
+			log.debug('dacacoreresurce:'+util.inspect(dataCoreResource));
 			for(var r of dataCoreResource)
 			{
+				
+				
+				(function (r){
 				//var r= dataCoreResource[0];
-				log.debug('Merge resource :'+r['@id']+'\n');	
+				
 				//on compare les vertion des donné
 				// on merge en cas de besoin
 				var mondodbmodel = mongoose.model(m);
 				mondodbmodel.findOne({'@id':r['@id']},
 											function(err,datamongo){	
-
+					log.debug('Merge resource :'+r['@id']+'\n');	
 					if(err){log.error('error : '+err);return;}
 
 					//log.debug(datamongo);
 					if(datamongo == null)//not found we add him
 					{
-						log.debug('resource not found in mongodB:'+r['@id']+'\n');	
-
-						var instance = new mondodbmodel();
 						
-
-						MongoServiceMerge.DatacoreToMongoose(mondodbmodel,r,instance);
-						
-						if(debug)
-						{
-						log.debug(util.inspect(instance));
-						}
-						else
-						instance.save(function (err) {
-							if(err)
-								log.error(err);
-							return;
+						parent.GetRequestURI(token,r['@id'],'','oasis.sandbox',function(err,r){
+								if(err){return;}
+							log.debug('resource not found in mongodB:'+r['@id']+'\n');	
+	
+							var instance = new mondodbmodel();
+							
+	
+							MongoServiceMerge.DatacoreToMongoose(mondodbmodel,r,instance);
+							
+							if(debug)
+							{
+							log.debug(util.inspect(instance));
+							}
+							else
+							instance.save(function (err) {
+								if(err)
+									log.error(err);
+								return;
+							});
 						});
 						return;
 					}
@@ -203,9 +237,10 @@ MongoServiceMerge.MergeData = function (debug)
 					{
 						if(r['o:version']>datamongo['o:version'])//datacore plus ajour
 						{
-							log.debug('our resource is older');
+							log.debug('our resource is older : '+r['@id']);
 
-							MongoServiceMerge.DatacoreToMongoose(mondodbmodel,r,instance);
+							parent.GetRequestURI(token,r['@id'],'','oasis.sandbox',function(err,r){
+							MongoServiceMerge.DatacoreToMongoose(mondodbmodel,r,datamongo);
 							if(debug)
 							{
 							log.debug(util.inspect(datamongo));
@@ -214,6 +249,8 @@ MongoServiceMerge.MergeData = function (debug)
 							datamongo.save(function (err) {
 								if(err)log.error(err);
 								return;
+							});
+								
 							});
 						}
 						else if(r['o:version']<datamongo['o:version'])
@@ -249,18 +286,191 @@ MongoServiceMerge.MergeData = function (debug)
 
 				}
 				);
+				})(r);
 
 			}
-		});//now all data we existe in datacore isuptodate now merge our data with the data core(note this is idiot and very hard...)
+			
+			//now all data we existe in datacore isuptodate now merge our data with the data core(note this is idiot and very hard...)
 		// when we add data to mongo is automaticelle add to datacore...
 		
-		
-		
-		
-		
-		
+			var idindatacore = [];
+			for(var r of dataCoreResource)
+			{
+				idindatacore.push(r['@id']);
+			}
+			log.debug(m+" WHAT DO DO : "+util.inspect(idindatacore));
+			
+				var mondodbmodel = mongoose.model(m);
+				mondodbmodel.find({'@id':{ $nin:idindatacore }},
+				function(err,datainmongo){
+					
+					if(err)
+					{
+						log.error("Cant compare datacore and mondodb :"+err);
+						return;
+					}
+					if(datainmongo.length==0)//nothing todo
+					return;
+					
+					
+					var PostResource = [];
+						for(var r of datainmongo)
+						{
+				
+							var datalaunch = JSON.parse(JSON.stringify(r));
+							var datacore = {};
+							MongoServiceMerge.MongooseToDatacore(mondodbmodel,datalaunch,datacore);
+						//	log.debug('We send :'+datacore['@id']+'on datacore');	
+							
+							datacore['@id'] = r['@id'];
+							datacore['o:version']= -1;	
+							PostResource.push(datacore);
+						}
 
+
+				//	log.debug('POST RESOURCE'+util.inspect(PostResource));
+					parent.PostRequest(token,mondodbmodel.modelName,'','oasis.sandbox',JSON.stringify(PostResource),function(err,body){
+				
+						if(err)
+						log.error(mondodbmodel.modelName+": err in post data datacore: "+err+" :"+util.inspect(body));
+					
+				
+								});
+					
+					
+				
+			
+					});
+
+	
+			},{'X-Datacore-View':' '});
+		})(m);
+			
 	}
+	
 	});
-
 }
+	
+	 function DatacoreResource() {
+
+        this.ListAtribut = null;
+        this.Version = 'o:version';
+        this.ModelName = null;
+        this.Model = null;
+        this.Shem = {};
+        this.Shem['@id'] = {
+            type: String,
+            unique: true,
+            required: true
+        };
+        this.Shem[this.Version] = Number;
+    }
+
+    DatacoreResource.prototype.save = function(callbackend,mod, ID) {
+        var arguments_save = arguments;
+       var self = this;
+
+        if (mod) {
+            var what = {};
+            what['@id'] = 'http://data.ozwillo.com/dc/type/' + this.ModelName + "/" + parent.encodeUriPathComponent('' + ID);
+           
+            this.Model.findOne(what, _privsave);
+        }
+        else {
+            mod = 0;
+            var prei = {};
+            _privsave(0, prei);
+        }
+        
+
+        function _privsave(err, prei) {
+            if (err || !prei) {
+                if(err)
+                callbackend(err);
+                else
+                callbackend("notfound");
+                return;
+            }
+
+            if (!mod)
+                prei['@id'] = 'http://data.ozwillo.com/dc/type/' + self.ModelName + "/" + parent.encodeUriPathComponent('' + ID);
+            if (!mod)
+                prei[self.Version] = 0;
+            else
+                prei[self.Version] = prei[self.Version] + 1;
+
+            var arg = 3;
+                   
+            for (var i = 0; i < self.ListAtribut.length; i++,arg++) {
+                if (arguments_save[arg]!= null && arguments_save[arg]!='undefined')
+                prei[self.ListAtribut[i]] = arguments_save[arg];
+            }
+            log.debug("prei : " + util.inspect(prei));
+
+            if (!mod) {
+                var i = new self.Model(prei);
+               i.save(function(err) {
+                    if (err) {
+                    	log.error("cant save:" + err);callbackend(err);return
+                    	
+                    }
+                  
+                      
+			                    
+			                 prei[self.Version] = -1;
+			                parent.Fakelogin.getTokenKeepInMind(function(token) {
+			                   MongoServiceMerge.PostDataCore(token, self.Model, prei);
+			                });
+                    callbackend(err);
+                });
+
+
+            }
+            else {
+
+                prei.save(function(err) {
+                    if (err) log.error("cant save:" + err);
+                    callbackend(err);
+                });
+                parent.Fakelogin.getTokenKeepInMind(function(token) {
+			          MongoServiceMerge.PutDataCore(token, self.Model, prei);
+			    });
+            }
+        }
+    }
+    
+    DatacoreResource.prototype.WriteFlux = function(arg,callback)
+    {
+    	var self=this;
+        callback = callback || function(){}; 
+        if(this.GetData)
+         this.GetData(arg, function(err) {
+              if(err){log.error(err);callback(err);return;}
+                var argsave = [callback,0];
+                var i= 1;
+                for(;i<arguments.length;i++)
+                argsave.push(arguments[i]);
+                    
+              self.save.apply(self,argsave);
+         });
+        
+    };
+    
+	DatacoreResource.prototype.GetResource =function(ID,callback)
+	{
+		callback=callback || function(){};
+	    var what ={};
+		what['@id'] = 'http://data.ozwillo.com/dc/type/' + this.ModelName + "/" + parent.encodeUriPathComponent('' + ID);
+
+		this.Model.findOne(what, function (err, one) {
+			if (err) {callback("eror with the recource :"+what['@id']);return};
+			if(one)
+			callback(0,one);
+			else
+			callback("notfound");
+		})
+	
+	}
+    
+	
+MongoServiceMerge.DatacoreResource = DatacoreResource;

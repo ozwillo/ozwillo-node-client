@@ -7,8 +7,7 @@
     "dc_client_secret": "",
     "kernelBaseUrl": "https://accounts.ozwillo-dev.eu",
     "redirect_uri" : "http://localhost:8080/callback",
-    "datacoreTestUrl": "https://data.ozwillo-dev.eu/",
-	 "datacoreUrl": "https://data.ozwillo-dev.eu/",
-	 "additionalScope" : "datacore email" 
+	"datacoreUrl": "https://data.ozwillo-dev.eu/",
+	"additionalScope" : "datacore email" 
 
 }

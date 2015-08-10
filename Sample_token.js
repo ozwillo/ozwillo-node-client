@@ -1,29 +1,32 @@
-//firs require OzwiloUtil
-var co = require('./OzwiloUtil')({Fakelogin:true});
+//first require OzwiloUtil
+var co = require('./OzwiloUtil')({
+	// we need Fakelogin to get token
+	Fakelogin: true 
+});
 
-//set conf see conf.json
+// If th user special a conffile (otherwise we use conf.json)
 if (process.argv.length > 2) {
- co.setconf(process.argv[2]);
+	co.setconf(process.argv[2]);
 }
 
-//and get the token thanks to closure...
+//and now we get the token thanks to closure...
+co.Fakelogin.getTokenKeepInMind(function(token, id_token) {
+	//getTokenKeepInMind to keep the token in the next call of the function
 
-co.Fakelogin.getToken(function (token,id_token){
-	
-console.log("token:"+token);
-console.log("idtoken:"+id_token);
-	
-co.getUserInfo(token,function(err,result)
-			{
-			if(err)return;
+	console.log("token:" + token);
+	console.log("idtoken:" + id_token);
+
+	//Get information about the user who poses token : see [doc.ozwillo.com](http://doc.ozwillo.com/)
+	co.getUserInfo(token, function(err, result) {
+		if (err) return;
+		console.log(require("util").inspect(result));
+
+		//some info about the token : [doc.ozwillo.com](http://doc.ozwillo.com/)
+		co.getTokenInfo(token, function(err, result) {
+			if (err) return;
 			console.log(require("util").inspect(result));
-			
-			co.getTokenInfo(token,function(err,result)
-			{
-			if(err)return;
-			console.log(require("util").inspect(result));
-			});
-});
+		});
+	});
 
 
 });

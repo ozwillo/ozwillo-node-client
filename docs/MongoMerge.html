@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>MongoMerge.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+      <ul id="jump_to">
+        <li>
+          <a class="large" href="javascript:void(0);">Jump To &hellip;</a>
+          <a class="small" href="javascript:void(0);">+</a>
+          <div id="jump_wrapper">
+          <div id="jump_page_wrapper">
+            <div id="jump_page">
+              
+                
+                <a class="source" href="ConnectionOzwillo.html">
+                  ConnectionOzwillo.js
+                </a>
+              
+                
+                <a class="source" href="Fakelogin.html">
+                  Fakelogin.js
+                </a>
+              
+                
+                <a class="source" href="MongoMerge.html">
+                  MongoMerge.js
+                </a>
+              
+                
+                <a class="source" href="OzwiloUtil.html">
+                  OzwiloUtil.js
+                </a>
+              
+                
+                <a class="source" href="README.html">
+                  README.md
+                </a>
+              
+                
+                <a class="source" href="Sample_token.html">
+                  Sample_token.js
+                </a>
+              
+            </div>
+          </div>
+        </li>
+      </ul>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>MongoMerge.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              <p>summary:
+this module offer funtionality to merger your data with dacaore data: we try to merge your mongodb base and dacorebase</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+
+
+
+
+
+<span class="hljs-keyword">var</span> log;
+<span class="hljs-keyword">var</span> request; 
+<span class="hljs-keyword">var</span> conf;
+<span class="hljs-keyword">var</span> databaseload = <span class="hljs-literal">false</span>;
+<span class="hljs-keyword">var</span> parent;
+<span class="hljs-keyword">var</span> CronJob;
+<span class="hljs-keyword">var</span> mongoose;
+<span class="hljs-keyword">var</span> util = <span class="hljs-built_in">require</span>(<span class="hljs-string">'util'</span>);
+<span class="hljs-keyword">var</span> db ;
+MongoServiceMerge = <span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">obj</span>)
+</span>{
+
+	log=obj.log;
+	request=obj.request;
+	conf=obj.conf;
+	parent = obj.parent;
+
+	<span class="hljs-comment">/*CronJob = require('cron').CronJob;
+new CronJob('0 0 * * * *', function() {
+  MergeData();
+}, null, true, 'Europe/Paris');*/</span>
+
+	mongoose = <span class="hljs-built_in">require</span>(<span class="hljs-string">'mongoose'</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>mongoose.connect(‘mongodb://‘+(conf.databaseaddr || ‘127.0.0.1’)+’/‘+(conf.databasename || ‘mongobase’));</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	mongoose.connect(<span class="hljs-string">'mongodb://'</span>+(conf.databaseaddr || <span class="hljs-string">'127.0.0.1'</span>)+<span class="hljs-string">'/'</span>+(conf.databasename || <span class="hljs-string">'mongobase'</span>),<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err</span>) </span>{<span class="hljs-keyword">if</span> (err) { <span class="hljs-keyword">throw</span> err; }});
+
+	db = mongoose.connection;
+	db.on(<span class="hljs-string">'error'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err</span>)</span>{log.error(<span class="hljs-string">'connection error:'</span>+err)});
+
+	log.debug(<span class="hljs-string">'lauch mongoose'</span>);
+	db.once(<span class="hljs-string">'open'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">callback</span>) </span>{
+		databaseload=<span class="hljs-literal">true</span>;
+		log.debug(<span class="hljs-string">'dadabase open'</span>);	
+	});
+
+	MongoServiceMerge.mongoose = mongoose;
+
+	<span class="hljs-keyword">return</span> MongoServiceMerge;	
+};
+
+MongoServiceMerge.setconf =  <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">conff</span>)
+</span>{
+conf=conff;
+}
+
+
+
+
+<span class="hljs-keyword">var</span> DCModelList = [];
+MongoServiceMerge.AddDatacoreModel =  <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">name,shema</span>)
+</span>{	<span class="hljs-comment">// summary:</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <pre><code>        Use <span class="hljs-keyword">this</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">add</span> <span class="hljs-title">model</span> <span class="hljs-title">on</span> <span class="hljs-title">your</span> <span class="hljs-title">mongoose</span> <span class="hljs-title">which</span> <span class="hljs-title">be</span> <span class="hljs-title">merge</span> <span class="hljs-title">with</span> <span class="hljs-title">datacore</span>.</span>
+</code></pre><p>shema : 
+        must contain    ‘@id’   : { type: String ,unique:true,required:true}
+and  ‘o:version’    : Number </p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+	<span class="hljs-keyword">if</span>(DCModelList.lastIndexOf(name)==-<span class="hljs-number">1</span>)
+	{
+		log.debug(<span class="hljs-string">'add '</span>+name+<span class="hljs-string">' to model'</span>)
+		DCModelList.push(name);
+		mongoose.model(name, shema);
+	}
+
+}
+
+
+MongoServiceMerge.PostDataCore = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token,model,data,callback</span>)
+</span>{
+	<span class="hljs-keyword">var</span> datacore = {};
+	MongoServiceMerge.MongooseToDatacore(model,data,datacore);
+
+	
+	
+	log.debug(<span class="hljs-string">"POST:"</span>+<span class="hljs-built_in">JSON</span>.stringify(datacore));
+	log.debug(<span class="hljs-string">'modelName:'</span>+model.modelName);
+		parent.PostRequest(token,model.modelName,<span class="hljs-string">''</span>,<span class="hljs-string">'oasis.sandbox'</span>,<span class="hljs-built_in">JSON</span>.stringify(datacore),<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err,body</span>)</span>{
+		
+		<span class="hljs-keyword">if</span>(err)<span class="hljs-built_in">console</span>.log(<span class="hljs-string">"err in post data datacore: "</span>+err+<span class="hljs-string">" :"</span>+body);
+		<span class="hljs-keyword">if</span>(callback)
+		callback(err);
+		
+		});
+	
+}
+
+
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">copyitem</span>(<span class="hljs-params">model,from,to,todatacore</span>)</span>{
+	model.schema.eachPath(
+		<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">key</span>)
+		</span>{
+			<span class="hljs-keyword">if</span>(key == <span class="hljs-string">'_id'</span> || key==<span class="hljs-string">'__v'</span> || key[<span class="hljs-number">0</span>]==<span class="hljs-string">'_'</span>)
+				<span class="hljs-keyword">return</span>;
+			<span class="hljs-keyword">if</span>(model.schema.paths[key].instance==<span class="hljs-string">'Mixed'</span>)
+			{
+				<span class="hljs-keyword">if</span>(from[key])
+				{
+				<span class="hljs-keyword">if</span>(todatacore)
+				to[key]=<span class="hljs-built_in">JSON</span>.stringify(from[key]);
+				<span class="hljs-keyword">else</span>
+				to[key]=<span class="hljs-built_in">JSON</span>.parse(from[key]); 
+				}
+			}
+			<span class="hljs-keyword">else</span>
+			{
+				<span class="hljs-keyword">if</span>(from[key])
+				to[key]=from[key];
+			}
+
+		});
+}
+
+MongoServiceMerge.MongooseToDatacore= <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">model,mongoose,datacore</span>)
+</span>{
+copyitem(model,mongoose,datacore,<span class="hljs-number">1</span>);
+}
+MongoServiceMerge.DatacoreToMongoose = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">model,datacore,mongoose</span>)
+</span>{
+copyitem(model,datacore,mongoose,<span class="hljs-number">0</span>);
+}
+
+MongoServiceMerge.MergeData = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">debug</span>)
+</span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>summary: 
+        this funtion merga data with datacore
+            it list model add with AddDatacoreModel
+            and merge exiting data(it take the lastest vertion)
+         and crete in your database the data that exist on datacore
+ today we use developer accese on datacore it must be modified to use app acour and Fakelogin.</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p> Warning the funtion do not create data on datacore on modify your database</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	
+	
+	
+	<span class="hljs-comment">/**/</span>
+	<span class="hljs-comment">/*	<span class="hljs-doctag"><span class="hljs-keyword">TODO</span></span> */</span> 
+	
+	parent.Fakelogin.getTokenKeepInMind(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">token</span>)</span>{
+	
+	log.debug(<span class="hljs-string">'Merge data begin : '</span>+DCModelList);	
+	<span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> m <span class="hljs-keyword">of</span> DCModelList)
+	{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>pour chaque resource du datacore du model m</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>var idModel=conf.datacoreUrl+’/dc/type/dcmo:model_0/‘+m;</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>on retrouve les donner corespondant au model
+TODO ??</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		log.debug(<span class="hljs-string">'Merge model :'</span>+m+<span class="hljs-string">'\n'</span>);		
+		parent.GetRequestModel(token,m,<span class="hljs-string">''</span>,<span class="hljs-string">'oasis.sandbox'</span>,
+			 <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err,dataCoreResource</span>)
+			 </span>{
+			<span class="hljs-keyword">if</span>(err){<span class="hljs-keyword">return</span>;} 
+
+			log.debug(<span class="hljs-string">'dacacoreresurce:'</span>+util.inspect(dataCoreResource));
+			<span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> r <span class="hljs-keyword">of</span> dataCoreResource)
+			{
+				
+				(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">r</span>)</span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>var r= dataCoreResource[0];</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>on compare les vertion des donné
+on merge en cas de besoin</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>				<span class="hljs-keyword">var</span> mondodbmodel = mongoose.model(m);
+				mondodbmodel.findOne({<span class="hljs-string">'@id'</span>:r[<span class="hljs-string">'@id'</span>]},
+											<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err,datamongo</span>)</span>{	
+					log.debug(<span class="hljs-string">'Merge resource :'</span>+r[<span class="hljs-string">'@id'</span>]+<span class="hljs-string">'\n'</span>);	
+					<span class="hljs-keyword">if</span>(err){log.error(<span class="hljs-string">'error : '</span>+err);<span class="hljs-keyword">return</span>;}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>log.debug(datamongo);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>					<span class="hljs-keyword">if</span>(datamongo == <span class="hljs-literal">null</span>)<span class="hljs-comment">//not found we add him</span>
+					{
+						log.debug(<span class="hljs-string">'resource not found in mongodB:'</span>+r[<span class="hljs-string">'@id'</span>]+<span class="hljs-string">'\n'</span>);	
+
+						<span class="hljs-keyword">var</span> instance = <span class="hljs-keyword">new</span> mondodbmodel();
+						
+
+						MongoServiceMerge.DatacoreToMongoose(mondodbmodel,r,instance);
+						
+						<span class="hljs-keyword">if</span>(debug)
+						{
+						log.debug(util.inspect(instance));
+						}
+						<span class="hljs-keyword">else</span>
+						instance.save(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) </span>{
+							<span class="hljs-keyword">if</span>(err)
+								log.error(err);
+							<span class="hljs-keyword">return</span>;
+						});
+						<span class="hljs-keyword">return</span>;
+					}
+					<span class="hljs-keyword">else</span>
+					{
+						<span class="hljs-keyword">if</span>(r[<span class="hljs-string">'o:version'</span>]&gt;datamongo[<span class="hljs-string">'o:version'</span>])<span class="hljs-comment">//datacore plus ajour</span>
+						{
+							log.debug(<span class="hljs-string">'our resource is older : '</span>+r[<span class="hljs-string">'@id'</span>]);
+
+							MongoServiceMerge.DatacoreToMongoose(mondodbmodel,r,datamongo);
+							<span class="hljs-keyword">if</span>(debug)
+							{
+							log.debug(util.inspect(datamongo));
+							}
+							<span class="hljs-keyword">else</span>
+							datamongo.save(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) </span>{
+								<span class="hljs-keyword">if</span>(err)log.error(err);
+								<span class="hljs-keyword">return</span>;
+							});
+						}
+						<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(r[<span class="hljs-string">'o:version'</span>]&lt;datamongo[<span class="hljs-string">'o:version'</span>])
+						{
+							log.debug(<span class="hljs-string">'our resource is newer'</span>);	
+							<span class="hljs-keyword">var</span> datalaunch =	{};
+
+							MongoServiceMerge.MongooseToDatacore(mondodbmodel,datamongo,datalaunch);
+							
+							datalaunch[<span class="hljs-string">'@id'</span>] = r[<span class="hljs-string">'@id'</span>];
+							datalaunch[<span class="hljs-string">'o:version'</span>]= r[<span class="hljs-string">'o:version'</span>];
+							
+							log.debug(<span class="hljs-string">'we launch :'</span>+util.inspect(datalaunch)+<span class="hljs-string">"\n in  string: "</span>+<span class="hljs-built_in">JSON</span>.stringify(datalaunch));	
+						
+							
+							<span class="hljs-keyword">if</span>(debug)
+							{
+							}
+							<span class="hljs-keyword">else</span>	
+							parent.PutRequest(token,m,<span class="hljs-string">''</span>,<span class="hljs-string">'oasis.sandbox'</span>,<span class="hljs-built_in">JSON</span>.stringify(datalaunch),
+														<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err,body</span>)
+														</span>{
+														<span class="hljs-keyword">if</span>(err){log.error(err+<span class="hljs-string">" : "</span>+body);<span class="hljs-keyword">return</span>;}
+														log.debug(util.inspect(body));
+								<span class="hljs-keyword">return</span>;
+							});
+						}
+						<span class="hljs-keyword">else</span>{
+							log.debug(<span class="hljs-string">'our resource is uptodate'</span>);
+							<span class="hljs-comment">/*nothing to do*/</span>}
+
+					}
+
+				}
+				);
+				})(r);
+
+			}
+		});<span class="hljs-comment">//now all data we existe in datacore isuptodate now merge our data with the data core(note this is idiot and very hard...)</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>when we add data to mongo is automaticelle add to datacore…</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		
+		
+		
+		
+		
+		
+
+	}
+	});
+
+}</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

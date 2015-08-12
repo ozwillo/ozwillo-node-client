@@ -11,6 +11,11 @@ var log4js = require('log4js');
 var log = log4js.getLogger();
 log.setLevel('DEBUG');
 var request = require('request');
+var http = require('http');
+http.Agent({keepAlive:false});
+http.globalAgent.maxSockets = 25;
+
+var extend = require('extend');
 //require('request-debug')(request);
 var request = request.defaults({
 	jar: true
@@ -44,6 +49,13 @@ mo = module.exports = function(active2) {
 		active.Connection = active.Connection || false;
 	active.MongoServiceMerge = active.MongoServiceMerge || false;
 
+	active.onlylog = active.onlylog || false;
+	
+	// onlylog : active the debug mode and don't write on any database(datacore or mongodb)
+	conf.onlylog = active.onlylog ;
+	if(conf.onlylog)
+	log.setLevel('DEBUG');
+	
 	log.debug('You choose : \n' + util.inspect(active));
 
 	if (active.Connection) {
@@ -93,8 +105,9 @@ Confile is a path to a json  file like this:
 
 */
 mo.setconf = function(confile) {
-	conf = null;
-	conf = require(confile);
+//	conf = null;
+	conff = require(confile);
+	extend(conf,conff);
 	//log.debug("new conf:"+util.inspect(conf));
 	if (active.Connection)
 		mo.Connection.setconf(conf);
@@ -208,15 +221,15 @@ function GetRequest_priv(Authorization, url, project, headers_add, callback) {
 				log.error("Remote error in GetRequest() : " + err);
 				callback(err, '');
 			}
-			if (res.statusCode == 404 || res.statusCode == 400) {
+			else if (res.statusCode == 404 || res.statusCode == 400) {
 				log.error("Bad request : " + res.body);
 				callback(res, JSON.parse(body));
 			}
 			else if (res.statusCode == 200)
 				callback(null, JSON.parse(body));
 			else {
-				log.error("Bad codce : " + res.statusCode + ' : ' + res.body);
-				callback(null, '');
+				log.error("Bad code : " + res.statusCode+" : "+ url + ' : ' + res.body);
+				callback(res,JSON.parse(body));
 			}
 		});
 };
@@ -239,16 +252,19 @@ mo.GetRequestModel = function(token, url, arg, project, callback, head_add) {
 };
 
 // return a REsource with the spesified URI 
-mo.GetRequestURI = function(token,ID, project, callback, head_add) {
+mo.GetRequestURI = function(token,URI, project, callback, head_add) {
 // 
 // url : is the url after /dc/type/ see the playground.
 // arg : the argument after the ? in the request
 // Projet : the projet in ozwillo oasis.sandbox by exemple
 // callback (err,result)
 // head_add : to add some hearder on the request
+URI = URI || '';
+URI = conf.datacoreUrl+URI.substring('http://data.ozwillo.com/'.length);
 	
-	memoryCache.wrap(url + arg + project, function(cacheCallback) {
-		GetRequest_priv('Bearer ' + token, ID, project, head_add, cacheCallback);
+	
+	memoryCache.wrap('' + URI + project, function(cacheCallback) {
+		GetRequest_priv('Bearer ' + token, URI, project, head_add, cacheCallback);
 	}, {
 		ttl: 5
 	}, callback);
@@ -318,6 +334,15 @@ mo.GetRequestMixInDef = function(token, url, uri, arg, project, callback, head_a
 function PostRequest_priv(token, url, project, data, callback) {
 //private funcion
 
+	if(conf.onlylog)
+	{
+		log.debug("POST:"+conf.datacoreUrl + url);
+		log.debug("token:"+token);
+		log.debug("data:"+util.inspect(data))
+	return;
+	}
+		
+		
 	request({
 			rejectUnauthorized: false,
 			url: conf.datacoreUrl + url,
@@ -368,9 +393,21 @@ mo.PostRequestModel = function(token, url, arg, project, data, callback) {
 
 function PutRequest_priv(auth, url, project, data, callback) {
 
+
+	
 	log.debug("make PUT on :" + conf.datacoreUrl + url);
 	log.debug("make PUT on with projet :" + project);
 	log.debug("AND DATA:" + data);
+		
+	if(conf.onlylog)
+	{
+		/*log.debug("POST:"+conf.datacoreUrl + url);
+		log.debug("token:"+token);
+		log.debug("data:"+util.inspect(data))*/
+	return;
+	}
+	
+	
 	request({
 			rejectUnauthorized: false,
 			url: conf.datacoreUrl + url,
@@ -422,6 +459,14 @@ mo.PutRequestModel = function(token, url, arg, project, data, callback) {
 
 function DelRequest_priv(token, url, project, callback) {
 
+		
+	if(conf.onlylog)
+	{
+		log.debug("POST:"+conf.datacoreUrl + url);
+		log.debug("token:"+token);
+	return;
+	}
+	
 	request({
 			rejectUnauthorized: false,
 			url: conf.datacoreUrl + url,
@@ -471,6 +516,58 @@ mo.encodeUriPathComponent =   function (pathCpt) {
       return res;
    }
  /**/
+
+
+//This funcion try to get ALL !!!! REsource ID of a model /!\ Warging it can be very slow !!! do not use for ofen but sometime like by day
+mo.GetRequestALLModelID = function(token, url, arg, project, callback, head_add) {
+// 
+// url : is the url after /dc/type/ see the playground.
+// arg : the argument after the ? in the request
+// Projet : the projet in ozwillo oasis.sandbox by exemple
+// callback (err,result)
+// head_add : to add some hearder on the request
+	
+	var async = require("async");
+	arg=(arg || "")+'limit=250';
+	var array = [];
+	var next = true;
+	var date = (new Date(Date.now())).toISOString();
+	
+
+	
+	async.whilst(function(){return next;}, 
+					function(callback)
+					{
+		
+					GetRequest_priv('Bearer ' + token, conf.datacoreUrl+'/dc/type/' + url + '?' + arg+"&dc:modified=<"+encodeURIComponent(date), project, {'X-Datacore-View':'dc:modified'}, 
+								 function(err,body)
+								 {
+									if(err)
+									{
+									next=false;
+									log.error("error in GetRequestALLModelID: "+err);
+										callback(1);
+									return;
+									}
+									//log.debug("PASS WITH DATE : "+date);
+									//log.debug("ADD: "+body.length +" ELEMENT");
+									array = array.concat(body);
+									if(body==[] || body.length ==0)
+									next=false;
+									else
+									date = body[body.length-1]["dc:modified"];
+									callback(0);
+								  });
+		
+					}
+					, function(err){callback(err,array);});
+	
+	
+	
+
+
+};
+
 
 
 mo.memoryCache = memoryCache;

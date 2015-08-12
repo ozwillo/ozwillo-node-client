@@ -84,25 +84,25 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-2">&#182;</a>
               </div>
-              <p>Use : ex. node token.js ./config-prod.json (mind the ./)</p>
+              <p>In this module you can find : 
+Fakelogin : to get a token automatically
+Connection : help to get a token from a connected user to ozwillo
+MongoServiceMerge : thanks to mongoose , the mopdule offer mongodb merger with you data on the datacore.</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>
-
-<span class="hljs-comment">/* this module : 
-- use fake login to ozwillo to have a token (for debug your appli)
-- can connec you to ozwilo
-- offer mongodb merger with you data on the datacore 
-*/</span>
-
-
 <span class="hljs-keyword">var</span> active;
 <span class="hljs-keyword">var</span> util = <span class="hljs-built_in">require</span>(<span class="hljs-string">'util'</span>);
 <span class="hljs-keyword">var</span> log4js = <span class="hljs-built_in">require</span>(<span class="hljs-string">'log4js'</span>);
 <span class="hljs-keyword">var</span> log = log4js.getLogger();
 log.setLevel(<span class="hljs-string">'DEBUG'</span>);
-<span class="hljs-keyword">var</span> request = <span class="hljs-built_in">require</span>(<span class="hljs-string">'request'</span>);</pre></div></div>
+<span class="hljs-keyword">var</span> request = <span class="hljs-built_in">require</span>(<span class="hljs-string">'request'</span>);
+<span class="hljs-keyword">var</span> http = <span class="hljs-built_in">require</span>(<span class="hljs-string">'http'</span>);
+http.Agent({keepAlive:<span class="hljs-literal">false</span>});
+http.globalAgent.maxSockets = <span class="hljs-number">25</span>;
+
+<span class="hljs-keyword">var</span> extend = <span class="hljs-built_in">require</span>(<span class="hljs-string">'extend'</span>);</pre></div></div>
             
         </li>
         
@@ -117,17 +117,24 @@ log.setLevel(<span class="hljs-string">'DEBUG'</span>);
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> request = request.defaults({jar: <span class="hljs-literal">true</span>});
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> request = request.defaults({
+	jar: <span class="hljs-literal">true</span>
+});
+<span class="hljs-keyword">var</span> ReadWriteLock = <span class="hljs-built_in">require</span>(<span class="hljs-string">'locks'</span>);
 <span class="hljs-keyword">var</span> conf = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./config.json'</span>);
 <span class="hljs-keyword">var</span> cacheManager = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cache-manager'</span>);
-<span class="hljs-keyword">var</span> memoryCache = cacheManager.caching({store: <span class="hljs-string">'memory'</span>, max: <span class="hljs-number">100</span>, ttl: <span class="hljs-number">1000</span><span class="hljs-comment">/*seconds*/</span>});
+<span class="hljs-keyword">var</span> memoryCache = cacheManager.caching({
+	store: <span class="hljs-string">'memory'</span>,
+	max: <span class="hljs-number">100</span>,
+	ttl: <span class="hljs-number">1000</span> <span class="hljs-comment">/*seconds*/</span>
+});
 <span class="hljs-keyword">var</span> extend = <span class="hljs-built_in">require</span>(<span class="hljs-string">'extend'</span>);
 
-<span class="hljs-built_in">module</span>.exports.Fakelogin ={};
-<span class="hljs-built_in">module</span>.exports.MongoServiceMerge={};
-<span class="hljs-built_in">module</span>.exports.Connection={};
-mo = <span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">activate</span>)
-</span>{</pre></div></div>
+<span class="hljs-built_in">module</span>.exports.Fakelogin = {};
+<span class="hljs-built_in">module</span>.exports.MongoServiceMerge = {};
+<span class="hljs-built_in">module</span>.exports.Connection = {};
+<span class="hljs-built_in">module</span>.exports.ReadWriteLock = ReadWriteLock;
+mo = <span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">active2</span>) </span>{</pre></div></div>
             
         </li>
         
@@ -138,37 +145,26 @@ mo = <span class="hljs-built_in">module</span>.exports = <span class="hljs-funct
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>activate:
-activate is a objet with 3 atribut on false or true :
--Fakelogin : ta load Fakelogin</p>
+              <p>active:
+active is a objet with 3 atribut on false or true :</p>
 <ul>
+<li>Fakelogin : ta load Fakelogin</li>
 <li>Connection : to load Connection</li>
-<li>MongoServiceMerge : to load the merge service with mongo db</li>
+<li>MongoServiceMerge : to load MongoServiceMerge</li>
 </ul>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>	
-active=activate;
-active.Fakelogin = active.Fakelogin || <span class="hljs-literal">false</span>;
-<span class="hljs-keyword">if</span>(active.Fakelogin)
-active.Connection = <span class="hljs-literal">true</span>;
-<span class="hljs-keyword">else</span>	
-active.Connection = active.Connection || <span class="hljs-literal">false</span>;	
-active.MongoServiceMerge = active.MongoServiceMerge || <span class="hljs-literal">false</span>;	
+	active = active2 || {};
+	active.Fakelogin = active.Fakelogin || <span class="hljs-literal">false</span>;
+	<span class="hljs-keyword">if</span> (active.Fakelogin)
+		active.Connection = <span class="hljs-literal">true</span>;
+	<span class="hljs-keyword">else</span>
+		active.Connection = active.Connection || <span class="hljs-literal">false</span>;
+	active.MongoServiceMerge = active.MongoServiceMerge || <span class="hljs-literal">false</span>;
 
-log.debug(<span class="hljs-string">'we have:'</span>+util.inspect(active));	
-
-<span class="hljs-keyword">if</span>(active.Connection)
-{
-<span class="hljs-built_in">module</span>.exports.Connection = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./ConnectionOzwillo'</span>)({log: log, conf:conf, request:request});
-}
-<span class="hljs-keyword">if</span>(active.Fakelogin)
-{
-<span class="hljs-built_in">module</span>.exports.Fakelogin = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./Fakelogin'</span>)({log: log, conf:conf, request:request,Connection:<span class="hljs-built_in">module</span>.exports.Connection});
-}
-<span class="hljs-keyword">if</span>(active.MongoServiceMerge)
-	{</pre></div></div>
+	active.onlylog = active.onlylog || <span class="hljs-literal">false</span>;</pre></div></div>
             
         </li>
         
@@ -179,12 +175,63 @@ log.debug(<span class="hljs-string">'we have:'</span>+util.inspect(active));
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <p>log.debug(‘MongoServiceMerge loading’);</p>
+              <p>onlylog : active the debug mode and don’t write on any database(datacore or mongodb)</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>	
-	<span class="hljs-built_in">module</span>.exports.MongoServiceMerge = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./MongoMerge'</span>)({log: log, conf:conf, request:request,parent:<span class="hljs-built_in">module</span>.exports});</pre></div></div>
+            <div class="content"><div class='highlight'><pre>	conf.onlylog = active.onlylog ;
+	<span class="hljs-keyword">if</span>(conf.onlylog)
+	log.setLevel(<span class="hljs-string">'DEBUG'</span>);
+	
+	log.debug(<span class="hljs-string">'You choose : \n'</span> + util.inspect(active));
+
+	<span class="hljs-keyword">if</span> (active.Connection) {
+		<span class="hljs-built_in">module</span>.exports.Connection = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./ConnectionOzwillo'</span>)({
+			log: log,
+			conf: conf,
+			request: request,
+		});
+	}
+	<span class="hljs-keyword">if</span> (active.Fakelogin) {
+		<span class="hljs-built_in">module</span>.exports.Fakelogin = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./Fakelogin'</span>)({
+			log: log,
+			conf: conf,
+			request: request,
+			Connection: <span class="hljs-built_in">module</span>.exports.Connection,
+			ReadWriteLock : ReadWriteLock
+		});
+	}
+	<span class="hljs-keyword">if</span> (active.MongoServiceMerge) {
+		<span class="hljs-built_in">module</span>.exports.MongoServiceMerge = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./MongoMerge'</span>)({
+			log: log,
+			conf: conf,
+			request: request,
+			parent: <span class="hljs-built_in">module</span>.exports
+		});
+	}
+	<span class="hljs-keyword">return</span> <span class="hljs-built_in">module</span>.exports;
+}
+
+
+
+<span class="hljs-comment">/**
+Confile is a path to a json  file like this:
+{
+    "login": "le login a simuler",
+    "password": "password of account to connect",
+    "app_client_id": "dc",
+    "app_client_secret": "secret password",
+    "dc_client_id": "dc",
+    "dc_client_secret": "password",
+    "kernelBaseUrl": "https://accounts.ozwillo-dev.eu",
+    "redirect_uri" : "https://data.ozwillo-dev.eu/dc/playground/token",
+    "datacoreUrl": "https://data.ozwillo-dev.eu/",
+    "additionalScope" : "datacore email" 
+
+}
+
+*/</span>
+mo.setconf = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">confile</span>) </span>{</pre></div></div>
             
         </li>
         
@@ -195,36 +242,12 @@ log.debug(<span class="hljs-string">'we have:'</span>+util.inspect(active));
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>log.debug(‘MongoServiceMerge loaded :’);</p>
+              <p>conf = null;</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>	 
-	}	
-<span class="hljs-keyword">return</span> <span class="hljs-built_in">module</span>.exports;
-}	
-
-
-
-<span class="hljs-comment">/**
-confile is a json file like this:
-{
-    "login": "le login a simuler",
-    "password": "password of account to connect",
-    "app_client_id": "dc",
-    "app_client_secret": "password",
-    "dc_client_id": "dc",
-    "dc_client_secret": "password",
-    "kernelBaseUrl": "https://accounts.ozwillo-dev.eu",
-    "redirect_uri" : "https://data.ozwillo-dev.eu/dc/playground/token",
-    "datacoreTestUrl": "https://data.ozwillo-dev.eu/dc/type/pli:city_0"
-}
-
-*/</span>
-mo.setconf = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">confile</span>)
-</span>{
-	conf = <span class="hljs-literal">null</span>;
-	conf = <span class="hljs-built_in">require</span>(confile);</pre></div></div>
+            <div class="content"><div class='highlight'><pre>	conff = <span class="hljs-built_in">require</span>(confile);
+	extend(conf,conff);</pre></div></div>
             
         </li>
         
@@ -239,14 +262,14 @@ mo.setconf = <span class="hljs-function"><span class="hljs-keyword">function</sp
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>	<span class="hljs-keyword">if</span>(active.Connection)
-	mo.Connection.setconf(conf);
-	<span class="hljs-keyword">if</span>(active.Fakelogin)
-	mo.Fakelogin.setconf(conf);
-	<span class="hljs-keyword">if</span>(active.MongoServiceMerge)
-	mo.MongoServiceMerge.setconf(conf);
-	
-		log.debug(<span class="hljs-string">'loading conf '</span> + confile);
+            <div class="content"><div class='highlight'><pre>	<span class="hljs-keyword">if</span> (active.Connection)
+		mo.Connection.setconf(conf);
+	<span class="hljs-keyword">if</span> (active.Fakelogin)
+		mo.Fakelogin.setconf(conf);
+	<span class="hljs-keyword">if</span> (active.MongoServiceMerge)
+		mo.MongoServiceMerge.setconf(conf);
+
+	log.debug(<span class="hljs-string">'loading conf '</span> + confile);
 }
 
 
@@ -264,7 +287,7 @@ mo.getUserInfo = <span class="hljs-function"><span class="hljs-keyword">function
                 <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
               <p>summary :
-this funtion return some info about the user </p>
+                    this funtion return some info about the user in callback see <a href="http://doc.ozwillo.com/">doc.ozwillo.com</a></p>
 <p>token : 
              of course we need the token of the user
 callback :
@@ -272,28 +295,27 @@ callback :
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>	
-  <span class="hljs-keyword">var</span> options = {
-    rejectUnauthorized: <span class="hljs-literal">false</span>,
-    url: conf.kernelBaseUrl + <span class="hljs-string">'/a/userinfo'</span>,
-    method: <span class="hljs-string">'POST'</span>,
-    headers: {
-      <span class="hljs-string">'Authorization'</span>: <span class="hljs-string">'Bearer '</span> + tokens,
-      <span class="hljs-string">'Accept'</span>: <span class="hljs-string">'application/json'</span>
-    }
-  };
-  
-  request(options, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res, body</span>) </span>{
-    <span class="hljs-keyword">if</span>(err) {
-      log.error(<span class="hljs-string">"Remote error in testToken() : "</span> + err);
-		 callback(<span class="hljs-number">1</span>,err);
-      <span class="hljs-keyword">return</span>;
-    }
-     log.debug(<span class="hljs-string">'Should display information about the user:'</span>);
-     log.debug(body+<span class="hljs-string">'\n'</span>);
-	  callback(<span class="hljs-number">0</span>,<span class="hljs-built_in">JSON</span>.parse(body));
-  }
-			 );
+            <div class="content"><div class='highlight'><pre>
+	<span class="hljs-keyword">var</span> options = {
+		rejectUnauthorized: <span class="hljs-literal">false</span>,
+		url: conf.kernelBaseUrl + <span class="hljs-string">'/a/userinfo'</span>,
+		method: <span class="hljs-string">'POST'</span>,
+		headers: {
+			<span class="hljs-string">'Authorization'</span>: <span class="hljs-string">'Bearer '</span> + token,
+			<span class="hljs-string">'Accept'</span>: <span class="hljs-string">'application/json'</span>
+		}
+	};
+
+	request(options, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res, body</span>) </span>{
+		<span class="hljs-keyword">if</span> (err) {
+			log.error(<span class="hljs-string">"Remote error in testToken() : "</span> + err);
+			callback(<span class="hljs-number">1</span>, err);
+			<span class="hljs-keyword">return</span>;
+		}
+		log.debug(<span class="hljs-string">'Should display information about the user:'</span>);
+		log.debug(body + <span class="hljs-string">'\n'</span>);
+		callback(<span class="hljs-number">0</span>, <span class="hljs-built_in">JSON</span>.parse(body));
+	});
 };
 
 
@@ -309,99 +331,84 @@ mo.getTokenInfo = <span class="hljs-function"><span class="hljs-keyword">functio
                 <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>summary :
-this funtion return some info about the user </p>
-<p>token : 
+                    this funtion return some info about the user see <a href="http://doc.ozwillo.com/">doc.ozwillo.com</a>
+token : 
              of course we need the token of the user
 callback :
             function who take the responce from the serveur</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>	
-	
+            <div class="content"><div class='highlight'><pre>
+
 	<span class="hljs-keyword">var</span> appBasicAuth = <span class="hljs-string">'Basic '</span> + <span class="hljs-keyword">new</span> Buffer(conf.app_client_id + <span class="hljs-string">':'</span> + conf.app_client_secret).toString(<span class="hljs-string">"base64"</span>);
-	
-	
-  <span class="hljs-keyword">var</span> options = {
-    rejectUnauthorized: <span class="hljs-literal">false</span>,
-    url: conf.kernelBaseUrl + <span class="hljs-string">'/a/tokeninfo'</span>,
-    method: <span class="hljs-string">'POST'</span>,
-    headers: {
-       <span class="hljs-string">'Authorization'</span>: appBasicAuth,
-      <span class="hljs-string">'Accept'</span>: <span class="hljs-string">'application/json'</span>,
-      <span class="hljs-string">'Content-Type'</span>: <span class="hljs-string">'application/x-www-form-urlencoded'</span>
-    },
-    body : <span class="hljs-string">'token'</span> +<span class="hljs-string">'='</span>+token
-    	
-    
-    
-  };
-  
-  request(options, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res, body</span>) </span>{
-    <span class="hljs-keyword">if</span>(err) {
-      log.error(<span class="hljs-string">"Remote error in getTokenInfo() : "</span> + err);
-		 callback(<span class="hljs-number">1</span>,err);
-      <span class="hljs-keyword">return</span>;
-    }
-    log.debug(<span class="hljs-string">'getTokenInfo : '</span>+util.inspect(res.headers)+<span class="hljs-string">' '</span>+res.statusCode+<span class="hljs-string">' '</span>+res.statusMessage);
-     log.debug(<span class="hljs-string">'Should display information about the Token:'</span>);
-     log.debug(body+<span class="hljs-string">'\n'</span>);
-     <span class="hljs-keyword">if</span>(body!=<span class="hljs-string">""</span>)
-	  callback(<span class="hljs-number">0</span>,<span class="hljs-built_in">JSON</span>.parse(body));
-	  <span class="hljs-keyword">else</span> log.error(<span class="hljs-string">"eroor"</span>);
-  }
-			 );
+
+
+	<span class="hljs-keyword">var</span> options = {
+		rejectUnauthorized: <span class="hljs-literal">false</span>,
+		url: conf.kernelBaseUrl + <span class="hljs-string">'/a/tokeninfo'</span>,
+		method: <span class="hljs-string">'POST'</span>,
+		headers: {
+			<span class="hljs-string">'Authorization'</span>: appBasicAuth,
+			<span class="hljs-string">'Accept'</span>: <span class="hljs-string">'application/json'</span>,
+			<span class="hljs-string">'Content-Type'</span>: <span class="hljs-string">'application/x-www-form-urlencoded'</span>
+		},
+		body: <span class="hljs-string">'token'</span> + <span class="hljs-string">'='</span> + token
+
+
+
+	};
+
+	request(options, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res, body</span>) </span>{
+		<span class="hljs-keyword">if</span> (err) {
+			log.error(<span class="hljs-string">"Remote error in getTokenInfo() : "</span> + err);
+			callback(<span class="hljs-number">1</span>, err);
+			<span class="hljs-keyword">return</span>;
+		}
+		log.debug(<span class="hljs-string">'getTokenInfo : '</span> + util.inspect(res.headers) + <span class="hljs-string">' '</span> + res.statusCode + <span class="hljs-string">' '</span> + res.statusMessage);
+		log.debug(<span class="hljs-string">'Should display information about the Token:'</span>);
+		log.debug(body + <span class="hljs-string">'\n'</span>);
+		<span class="hljs-keyword">if</span> (body != <span class="hljs-string">""</span>)
+			callback(<span class="hljs-number">0</span>, <span class="hljs-built_in">JSON</span>.parse(body));
+		<span class="hljs-keyword">else</span> log.error(<span class="hljs-string">"eroor"</span>);
+	});
 };
 
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">GetRequest_priv</span>(<span class="hljs-params">Authorization,url,project,headers_add,callback</span>)
-</span>{
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">GetRequest_priv</span>(<span class="hljs-params">Authorization, url, project, headers_add, callback</span>) </span>{
 
 	<span class="hljs-keyword">var</span> headers = {
-      <span class="hljs-string">'Authorization'</span>: Authorization,
-      <span class="hljs-string">'Accept'</span>: <span class="hljs-string">'application/json'</span>,
-		<span class="hljs-string">'X-Datacore-Project'</span> : project
-    };
-		 
+		<span class="hljs-string">'Authorization'</span>: Authorization,
+		<span class="hljs-string">'Accept'</span>: <span class="hljs-string">'application/json'</span>,
+		<span class="hljs-string">'X-Datacore-Project'</span>: project
+	};
 
-	<span class="hljs-keyword">if</span>(headers_add)
-	extend(headers,headers_add);
-  request({
-    rejectUnauthorized: <span class="hljs-literal">false</span>,
-    url: conf.datacoreTestUrl+url,
-    method: <span class="hljs-string">'GET'</span>,
-    headers: headers
-  }, 
+
+	<span class="hljs-keyword">if</span> (headers_add)
+		extend(headers, headers_add);
+	request({
+			rejectUnauthorized: <span class="hljs-literal">false</span>,
+			url: url,
+			method: <span class="hljs-string">'GET'</span>,
+			headers: headers
+		},
 		<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res, body</span>) </span>{
-		 <span class="hljs-keyword">if</span>(err) {
-			log.error(<span class="hljs-string">"Remote error in GetRequest() : "</span> + err);
-			callback(err,<span class="hljs-string">''</span>);
-		 }
-		 <span class="hljs-keyword">if</span>(res.statusCode == <span class="hljs-number">404</span> || res.statusCode == <span class="hljs-number">400</span>)
-		 {
-		 log.error(<span class="hljs-string">"Bad request : "</span> + res.body);
-			 callback(res,<span class="hljs-built_in">JSON</span>.parse(body));
-		 }
-		 <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(res.statusCode == <span class="hljs-number">200</span>)
-		 callback(<span class="hljs-literal">null</span>,<span class="hljs-built_in">JSON</span>.parse(body));
-	  		<span class="hljs-keyword">else</span> {log.error(<span class="hljs-string">"Bad codce : "</span> + res.statusCode+<span class="hljs-string">' : '</span>+res.body);
-				  callback(<span class="hljs-literal">null</span>,<span class="hljs-string">''</span>);
-				  }
-  				});
-};
-
-			 
-<span class="hljs-comment">/*Returns all Datacore resources of the given Model type that match all (AND)criteria provided in HTTP query parameters, sorted in the given order(s) if any, with (limited) pagination. */</span>
-mo.GetRequestModel = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token,url,arg,project,callback,head_add</span>)
-</span>{
-	memoryCache.wrap(url+arg+project, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">cacheCallback</span>) </span>{
-			  GetRequest_priv(<span class="hljs-string">'Bearer '</span> + token,<span class="hljs-string">'/dc/type/'</span>+url+<span class="hljs-string">'?'</span>+arg,project,head_add,cacheCallback);
-		 }, {ttl: <span class="hljs-number">5</span>}, callback);
-};
-
-
-mo.GetRequestTypeAPP = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">basic,url,arg,project,callback,head_add</span>)
-</span>{</pre></div></div>
+			<span class="hljs-keyword">if</span> (err) {
+				log.error(<span class="hljs-string">"Remote error in GetRequest() : "</span> + err);
+				callback(err, <span class="hljs-string">''</span>);
+			}
+			<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (res.statusCode == <span class="hljs-number">404</span> || res.statusCode == <span class="hljs-number">400</span>) {
+				log.error(<span class="hljs-string">"Bad request : "</span> + res.body);
+				callback(res, <span class="hljs-built_in">JSON</span>.parse(body));
+			}
+			<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (res.statusCode == <span class="hljs-number">200</span>)
+				callback(<span class="hljs-literal">null</span>, <span class="hljs-built_in">JSON</span>.parse(body));
+			<span class="hljs-keyword">else</span> {
+				log.error(<span class="hljs-string">"Bad code : "</span> + res.statusCode+<span class="hljs-string">" : "</span>+ url + <span class="hljs-string">' : '</span> + res.body);
+				callback(res,<span class="hljs-built_in">JSON</span>.parse(body));
+			}
+		});
+};</pre></div></div>
             
         </li>
         
@@ -412,198 +419,581 @@ mo.GetRequestTypeAPP = <span class="hljs-function"><span class="hljs-keyword">fu
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
-              <p>summary:
-this funtion make a request on datacore (/dc/type) but use basci autheitfication for debug(deprecated)</p>
+              <p>Returns all Datacore resources of the given Model type that match all (AND)criteria provided in HTTP query parameters, sorted in the given order(s) if any, with (limited) pagination. </p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>mo.GetRequestModel = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token, url, arg, project, callback, head_add</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>url : is the url after /dc/type/ see the playground.
+arg : the argument after the ? in the request
+Projet : the projet in ozwillo oasis.sandbox by exemple
+callback (err,result)
+head_add : to add some hearder on the request</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	
+	memoryCache.wrap(url + arg + project, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">cacheCallback</span>) </span>{
+		GetRequest_priv(<span class="hljs-string">'Bearer '</span> + token, conf.datacoreUrl+<span class="hljs-string">'/dc/type/'</span> + url + <span class="hljs-string">'?'</span> + arg, project, head_add, cacheCallback);
+	}, {
+		ttl: <span class="hljs-number">5</span>
+	}, callback);
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>return a REsource with the spesified URI </p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>mo.GetRequestURI = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token,URI, project, callback, head_add</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>url : is the url after /dc/type/ see the playground.
+arg : the argument after the ? in the request
+Projet : the projet in ozwillo oasis.sandbox by exemple
+callback (err,result)
+head_add : to add some hearder on the request</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>URI = URI || <span class="hljs-string">''</span>;
+URI = conf.datacoreUrl+URI.substring(<span class="hljs-string">'http://data.ozwillo.com/'</span>.length);
+	
+	
+	memoryCache.wrap(<span class="hljs-string">''</span> + URI + project, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">cacheCallback</span>) </span>{
+		GetRequest_priv(<span class="hljs-string">'Bearer '</span> + token, URI, project, head_add, cacheCallback);
+	}, {
+		ttl: <span class="hljs-number">5</span>
+	}, callback);
+};
+
+
+
+
+
+mo.GetRequestTypeAPP = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">basic, url, arg, project, callback, head_add</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Deprecated !!!! </p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	
+
+
+	memoryCache.wrap(url + arg + project, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">cacheCallback</span>) </span>{
+		GetRequest_priv(<span class="hljs-string">'Basic '</span> + basic, conf.datacoreUrl+<span class="hljs-string">'/dc/type/'</span> + url + <span class="hljs-string">'?'</span> + arg, project, head_add, cacheCallback);
+	}, {
+		ttl: <span class="hljs-number">5</span>
+	}, callback);
+};
+
+
+<span class="hljs-comment">/*Returns all Datacore resources of the given type that match all (AND)criteria provided in HTTP query parameters, sorted in the given order(s) if any, with (limited) pagination.It is a 'native' query in that it isimplemented as a single MongoDB query with pagination by default. */</span>
+mo.GetRequesttype = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token, url, arg, project, callback, head_add</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Same as GetRequestModel but for directe uri</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	memoryCache.wrap(url + arg + project, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">cacheCallback</span>) </span>{
+		GetRequest_priv(<span class="hljs-string">'Bearer '</span> + token, conf.datacoreUrl+<span class="hljs-string">'/dc/'</span> + url + <span class="hljs-string">'?'</span> + arg, project, head_add, cacheCallback);
+	}, {
+		ttl: <span class="hljs-number">5</span>
+	}, callback);
+};
+
+<span class="hljs-comment">/*Returns all Datacore resources of the given Model type that match all (AND)criteria provided in HTTP query parameters, sorted in the given order(s) if any, with (limited) pagination. */</span>
+mo.GetRequestModelSpecific = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token, url, uri, arg, project, callback, head_add</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>same as GetRequestModel    </p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	
+	memoryCache.wrap(url + uri + arg + project, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">cacheCallback</span>) </span>{
+		GetRequest_priv(<span class="hljs-string">'Bearer '</span> + token, conf.datacoreUrl+<span class="hljs-string">'/dc/type/'</span> + url + <span class="hljs-string">'/'</span> + uri + <span class="hljs-string">'?'</span> + arg, project, head_add, cacheCallback);
+	}, {
+		ttl: <span class="hljs-number">5</span>
+	}, callback);
+};
+
+mo.GetRequestModelDef = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token, url, uri, arg, project, callback, head_add</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>same as GetRequestModel but to get a model definition    </p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	
+	memoryCache.wrap(url + uri + arg + project, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">cacheCallback</span>) </span>{
+		GetRequest_priv(<span class="hljs-string">'Bearer '</span> + token, conf.datacoreUrl+<span class="hljs-string">'/dc/type/dcmo:model_0/'</span> + url + <span class="hljs-string">'/'</span> + uri + <span class="hljs-string">'?'</span> + arg, project, head_add, cacheCallback);
+	}, {
+		ttl: <span class="hljs-number">5</span>
+	}, callback);
+};
+mo.GetRequestMixInDef = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token, url, uri, arg, project, callback, head_add</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>same as GetRequestModel but to get a mixin model    </p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>	
 	
-	memoryCache.wrap(url+arg+project, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">cacheCallback</span>) </span>{
-			  GetRequest_priv(<span class="hljs-string">'Basic '</span> + basic,<span class="hljs-string">'/dc/type/'</span>+url+<span class="hljs-string">'?'</span>+arg,project,head_add,cacheCallback);
-		 }, {ttl: <span class="hljs-number">5</span>}, callback);
+	memoryCache.wrap(url + uri + arg + project, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">cacheCallback</span>) </span>{
+		GetRequest_priv(<span class="hljs-string">'Bearer '</span> + token, conf.datacoreUrl+<span class="hljs-string">'/dc/type/dcmi:mixin_0/'</span> + url + <span class="hljs-string">'/'</span> + uri + <span class="hljs-string">'?'</span> + arg, project, head_add, cacheCallback);
+	}, {
+		ttl: <span class="hljs-number">5</span>
+	}, callback);
 };
 
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">PostRequest_priv</span>(<span class="hljs-params">token, url, project, data, callback</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>private funcion</p>
 
-
-  
-
-
-
-<span class="hljs-comment">/*Returns all Datacore resources of the given type that match all (AND)criteria provided in HTTP query parameters, sorted in the given order(s) if any, with (limited) pagination.It is a 'native' query in that it isimplemented as a single MongoDB query with pagination by default. */</span>
-mo.GetRequesttype = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token,url,arg,project,callback,head_add</span>)
-</span>{
-	memoryCache.wrap(url+arg+project, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">cacheCallback</span>) </span>{
-			  GetRequest_priv(<span class="hljs-string">'Bearer '</span> + token,<span class="hljs-string">'/dc/'</span>+url+<span class="hljs-string">'?'</span>+arg,project,head_add,cacheCallback);
-		 }, {ttl: <span class="hljs-number">5</span>}, callback);
-};
-
-<span class="hljs-comment">/*Returns all Datacore resources of the given Model type that match all (AND)criteria provided in HTTP query parameters, sorted in the given order(s) if any, with (limited) pagination. */</span>
-mo.GetRequestModelSpecific = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token,url,uri,arg,project,callback,head_add</span>)
-</span>{
-	memoryCache.wrap(url+uri+arg+project, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">cacheCallback</span>) </span>{
-			  GetRequest_priv(<span class="hljs-string">'Bearer '</span> + token,<span class="hljs-string">'/dc/type/'</span>+url+<span class="hljs-string">'/'</span>+uri+<span class="hljs-string">'?'</span>+arg,project,head_add,cacheCallback);
-		 }, {ttl: <span class="hljs-number">5</span>}, callback);
-};
-
-mo.GetRequestModelDef = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token,url,uri,arg,project,callback,head_add</span>)
-</span>{
-	memoryCache.wrap(url+uri+arg+project, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">cacheCallback</span>) </span>{
-			  GetRequest_priv(<span class="hljs-string">'Bearer '</span> + token,<span class="hljs-string">'/dc/type/dcmo:model_0/'</span>+url+<span class="hljs-string">'/'</span>+uri+<span class="hljs-string">'?'</span>+arg,project,head_add,cacheCallback);
-		 }, {ttl: <span class="hljs-number">5</span>}, callback);
-};
-mo.GetRequestMixInDef = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token,url,uri,arg,project,callback,head_add</span>)
-</span>{
-	memoryCache.wrap(url+uri+arg+project, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">cacheCallback</span>) </span>{
-			  GetRequest_priv(<span class="hljs-string">'Bearer '</span> + token,<span class="hljs-string">'/dc/type/dcmi:mixin_0/'</span>+url+<span class="hljs-string">'/'</span>+uri+<span class="hljs-string">'?'</span>+arg,project,head_add,cacheCallback);
-		 }, {ttl: <span class="hljs-number">5</span>}, callback);
-};
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">PostRequest_priv</span>(<span class="hljs-params">token,url,project,data,callback</span>)
-</span>{
-
-  request({
-    rejectUnauthorized: <span class="hljs-literal">false</span>,
-    url: conf.datacoreTestUrl+url,
-    method: <span class="hljs-string">'POST'</span>,
-    headers: {
-      <span class="hljs-string">'Authorization'</span>: <span class="hljs-string">'Bearer '</span> + token,
-      <span class="hljs-string">'Accept'</span>: <span class="hljs-string">'application/json'</span>,
-		<span class="hljs-string">'X-Datacore-Project'</span> : project,
-		<span class="hljs-string">'content-type'</span>: <span class="hljs-string">'application/json'</span>,
-    },
-	 body : data 
-  }, 
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+	<span class="hljs-keyword">if</span>(conf.onlylog)
+	{
+		log.debug(<span class="hljs-string">"POST:"</span>+conf.datacoreUrl + url);
+		log.debug(<span class="hljs-string">"token:"</span>+token);
+		log.debug(<span class="hljs-string">"data:"</span>+util.inspect(data))
+	<span class="hljs-keyword">return</span>;
+	}
+		
+		
+	request({
+			rejectUnauthorized: <span class="hljs-literal">false</span>,
+			url: conf.datacoreUrl + url,
+			method: <span class="hljs-string">'POST'</span>,
+			headers: {
+				<span class="hljs-string">'Authorization'</span>: <span class="hljs-string">'Bearer '</span> + token,
+				<span class="hljs-string">'Accept'</span>: <span class="hljs-string">'application/json'</span>,
+				<span class="hljs-string">'X-Datacore-Project'</span>: project,
+				<span class="hljs-string">'content-type'</span>: <span class="hljs-string">'application/json'</span>,
+			},
+			body: data
+		},
 		<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res, body</span>) </span>{
-    <span class="hljs-keyword">if</span>(err) {
-      log.error(<span class="hljs-string">"Remote error in PostRequest() : "</span> + err);
-			callback(<span class="hljs-literal">true</span>,<span class="hljs-string">''</span>);
-		 }
-		 <span class="hljs-keyword">if</span>(res.statusCode == <span class="hljs-number">404</span> || res.statusCode == <span class="hljs-number">400</span> || res.statusCode == <span class="hljs-number">200</span> || res.statusCode == <span class="hljs-number">500</span> ||res.statusCode == <span class="hljs-number">409</span> )
-		 {
-		 log.error(<span class="hljs-string">"Bad request : "</span> + body);
-			 callback(<span class="hljs-literal">true</span>,<span class="hljs-built_in">JSON</span>.parse(body));
-		 }
-		 <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(res.statusCode == <span class="hljs-number">201</span>)
-		 callback(<span class="hljs-literal">false</span>,<span class="hljs-built_in">JSON</span>.parse(body));
-	  	<span class="hljs-keyword">else</span> 
-		{
+			<span class="hljs-keyword">if</span> (err) {
+				log.error(<span class="hljs-string">"Remote error in PostRequest() : "</span> + err + <span class="hljs-string">' '</span>+util.inspect(res));
+				callback(<span class="hljs-literal">true</span>, <span class="hljs-string">''</span>);
+			}
+			<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (res.statusCode == <span class="hljs-number">404</span> || res.statusCode == <span class="hljs-number">400</span> || res.statusCode == <span class="hljs-number">200</span> || res.statusCode == <span class="hljs-number">500</span> || res.statusCode == <span class="hljs-number">409</span>) {
+				log.error(<span class="hljs-string">"Bad request : "</span> + body);
+				callback(<span class="hljs-literal">true</span>, <span class="hljs-built_in">JSON</span>.parse(body));
+				
+			}
+			<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (res.statusCode == <span class="hljs-number">201</span>)
+				callback(<span class="hljs-literal">false</span>, <span class="hljs-built_in">JSON</span>.parse(body));
+			<span class="hljs-keyword">else</span> {
 				log.error(<span class="hljs-string">"Bad Code : "</span> + res.statusCode);
-			 callback(<span class="hljs-string">'Bad Code '</span>+res.statusCode,body);
-		}
-  				});
+				callback(<span class="hljs-string">'Bad Code '</span> + res.statusCode, body);
+			}
+		});
 };
 
-mo.PostRequest = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token,url,arg,project,data,callback</span>)
-</span>{
- 
-PostRequest_priv(token,<span class="hljs-string">'/dc/type/'</span>+url+<span class="hljs-string">'/'</span>+<span class="hljs-string">'?'</span>+arg,project,data,callback);
+mo.PostRequest = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token, url, arg, project, data, callback</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>post data in datacore
+url : see GetRequestModel
+arg : see GetRequestModel
+projet : see GetRequestModel
+data : json object to send see Playground</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+
+	PostRequest_priv(token, <span class="hljs-string">'/dc/type/'</span> + url + <span class="hljs-string">'/'</span> + <span class="hljs-string">'?'</span> + arg, project, data, callback);
 };
 
-mo.PostRequestModel = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token,url,arg,project,data,callback</span>)
-</span>{
- 
-PostRequest_priv(token,<span class="hljs-string">'/dc/type/dcmo:model_0/'</span>+url+<span class="hljs-string">'/'</span>+<span class="hljs-string">'?'</span>+arg,project,data,callback);
+mo.PostRequestModel = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token, url, arg, project, data, callback</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>like PostRequest but for model</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+	PostRequest_priv(token, <span class="hljs-string">'/dc/type/dcmo:model_0/'</span> + url + <span class="hljs-string">'/'</span> + <span class="hljs-string">'?'</span> + arg, project, data, callback);
 };
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">PutRequest_priv</span>(<span class="hljs-params">auth,url,project,data,callback</span>)
-</span>{
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">PutRequest_priv</span>(<span class="hljs-params">auth, url, project, data, callback</span>) </span>{
 
-	log.debug(<span class="hljs-string">"make PUT on :"</span>+conf.datacoreTestUrl+url);
-	log.debug(<span class="hljs-string">"make PUT on with projet :"</span>+project);
-	log.debug(<span class="hljs-string">"AND DATA:"</span>+data);
-  request({
-    rejectUnauthorized: <span class="hljs-literal">false</span>,
-    url: conf.datacoreTestUrl+url,
-    method: <span class="hljs-string">'PUT'</span>,
-    headers: {
-      <span class="hljs-string">'Authorization'</span>: auth,
-      <span class="hljs-string">'Accept'</span>: <span class="hljs-string">'application/json'</span>,
-		<span class="hljs-string">'content-type'</span>: <span class="hljs-string">'application/json'</span>,
-		<span class="hljs-string">'X-Datacore-Project'</span> : project
-    },
-	 body : data 
-  }, 
-			 <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res, body</span>) </span>{
-    <span class="hljs-keyword">if</span>(err) {
-      log.error(<span class="hljs-string">"Remote error in PutRequest() : "</span> + err);
-			callback(err,<span class="hljs-string">''</span>);
-		 }
-		 <span class="hljs-keyword">if</span>(res.statusCode == <span class="hljs-number">500</span> || res.statusCode == <span class="hljs-number">409</span> || res.statusCode == <span class="hljs-number">404</span> || res.statusCode == <span class="hljs-number">400</span>)
-		 {
-		 log.error(<span class="hljs-string">"Bad request : "</span> + body);
-			 callback(<span class="hljs-string">'Bad request'</span>,body);
-		 }
-		 <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(res.statusCode == <span class="hljs-number">200</span>)
-		 callback(<span class="hljs-literal">false</span>,<span class="hljs-built_in">JSON</span>.parse(body));
-	  	<span class="hljs-keyword">else</span> 
-		{
+
+	
+	log.debug(<span class="hljs-string">"make PUT on :"</span> + conf.datacoreUrl + url);
+	log.debug(<span class="hljs-string">"make PUT on with projet :"</span> + project);
+	log.debug(<span class="hljs-string">"AND DATA:"</span> + data);
+		
+	<span class="hljs-keyword">if</span>(conf.onlylog)
+	{
+		<span class="hljs-comment">/*log.debug("POST:"+conf.datacoreUrl + url);
+		log.debug("token:"+token);
+		log.debug("data:"+util.inspect(data))*/</span>
+	<span class="hljs-keyword">return</span>;
+	}
+	
+	
+	request({
+			rejectUnauthorized: <span class="hljs-literal">false</span>,
+			url: conf.datacoreUrl + url,
+			method: <span class="hljs-string">'PUT'</span>,
+			headers: {
+				<span class="hljs-string">'Authorization'</span>: auth,
+				<span class="hljs-string">'Accept'</span>: <span class="hljs-string">'application/json'</span>,
+				<span class="hljs-string">'content-type'</span>: <span class="hljs-string">'application/json'</span>,
+				<span class="hljs-string">'X-Datacore-Project'</span>: project
+			},
+			body: data
+		},
+		<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res, body</span>) </span>{
+			<span class="hljs-keyword">if</span> (err) {
+				log.error(<span class="hljs-string">"Remote error in PutRequest() : "</span> + err);
+				callback(err, <span class="hljs-string">''</span>);
+			}
+			<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (res.statusCode == <span class="hljs-number">500</span> || res.statusCode == <span class="hljs-number">409</span> || res.statusCode == <span class="hljs-number">404</span> || res.statusCode == <span class="hljs-number">400</span>) {
+				log.error(<span class="hljs-string">"Bad request : "</span> + body);
+				callback(<span class="hljs-string">'Bad request'</span>, body);
+			}
+			<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (res.statusCode == <span class="hljs-number">200</span>)
+				callback(<span class="hljs-literal">false</span>, <span class="hljs-built_in">JSON</span>.parse(body));
+			<span class="hljs-keyword">else</span> {
 				log.error(<span class="hljs-string">"Bad Code : "</span> + res.statusCode);
-			 callback(<span class="hljs-string">'Bad Code '</span>+res.statusCode,body);
-		}
-  				});
+				callback(<span class="hljs-string">'Bad Code '</span> + res.statusCode, body);
+			}
+		});
 
-  		
+
 };
 
 
-mo.PutRequest = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token,url,arg,project,data,callback</span>)
-</span>{
- 
-PutRequest_priv(<span class="hljs-string">'Bearer '</span>+token,<span class="hljs-string">'/dc/type/'</span>+url+<span class="hljs-string">'/'</span>+<span class="hljs-string">'?'</span>+arg,project,data,callback);
+mo.PutRequest = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token, url, arg, project, data, callback</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>like PostRequest but put request for update</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	PutRequest_priv(<span class="hljs-string">'Bearer '</span> + token, <span class="hljs-string">'/dc/type/'</span> + url + <span class="hljs-string">'/'</span> + <span class="hljs-string">'?'</span> + arg, project, data, callback);
 };
 
-mo.PutRequestAPP = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">basic,url,arg,project,data,callback</span>)
-</span>{
- 
-PutRequest_priv(<span class="hljs-string">'Basic '</span>+basic,<span class="hljs-string">'/dc/type/'</span>+url+<span class="hljs-string">'/'</span>+<span class="hljs-string">'?'</span>+arg,project,data,callback);
+mo.PutRequestAPP = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">basic, url, arg, project, data, callback</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p>deprecated</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	PutRequest_priv(<span class="hljs-string">'Basic '</span> + basic, <span class="hljs-string">'/dc/type/'</span> + url + <span class="hljs-string">'/'</span> + <span class="hljs-string">'?'</span> + arg, project, data, callback);
 };
 
-mo.PutRequestModel = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token,url,arg,project,data,callback</span>)
-</span>{
- 
-PutRequest_priv(<span class="hljs-string">'Bearer '</span>+token,<span class="hljs-string">'/dc/type/dcmo:model_0/'</span>+url+<span class="hljs-string">'/'</span>+<span class="hljs-string">'?'</span>+arg,project,data,callback);
+mo.PutRequestModel = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token, url, arg, project, data, callback</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-24">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-24">&#182;</a>
+              </div>
+              <p>like PutRequest but for model</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+	PutRequest_priv(<span class="hljs-string">'Bearer '</span> + token, <span class="hljs-string">'/dc/type/dcmo:model_0/'</span> + url + <span class="hljs-string">'/'</span> + <span class="hljs-string">'?'</span> + arg, project, data, callback);
 };
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">DelRequest_priv</span>(<span class="hljs-params">token,url,project,callback</span>)
-</span>{
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">DelRequest_priv</span>(<span class="hljs-params">token, url, project, callback</span>) </span>{
 
-  request({
-    rejectUnauthorized: <span class="hljs-literal">false</span>,
-    url: conf.datacoreTestUrl+url,
-    method: <span class="hljs-string">'DELETE'</span>,
-    headers: {
-      <span class="hljs-string">'Authorization'</span>: <span class="hljs-string">'Bearer '</span> + token,
-      <span class="hljs-string">'Accept'</span>: <span class="hljs-string">'application/json'</span>,
-		<span class="hljs-string">'X-Datacore-Project'</span> : <span class="hljs-string">'oasis.'</span>+project
-    },
-	 body : data 
-  }, 
-			 <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res, body</span>) </span>{
-    <span class="hljs-keyword">if</span>(err) {
-      log.error(<span class="hljs-string">"Remote error in PutRequest() : "</span> + err);
-		callback(<span class="hljs-literal">true</span>,<span class="hljs-string">''</span>);
-		 }
-		 <span class="hljs-keyword">if</span>(res.statusCode == <span class="hljs-number">409</span> || res.statusCode == <span class="hljs-number">404</span> || res.statusCode == <span class="hljs-number">400</span>)
-		 {
-		 log.error(<span class="hljs-string">"Bad request : "</span> + body);
-			 callback(<span class="hljs-literal">true</span>,<span class="hljs-built_in">JSON</span>.parse(body));
-		 }
-		 <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(res.statusCode == <span class="hljs-number">204</span>)
-		 callback(<span class="hljs-literal">false</span>,<span class="hljs-built_in">JSON</span>.parse(body));
+		
+	<span class="hljs-keyword">if</span>(conf.onlylog)
+	{
+		log.debug(<span class="hljs-string">"POST:"</span>+conf.datacoreUrl + url);
+		log.debug(<span class="hljs-string">"token:"</span>+token);
+	<span class="hljs-keyword">return</span>;
+	}
+	
+	request({
+			rejectUnauthorized: <span class="hljs-literal">false</span>,
+			url: conf.datacoreUrl + url,
+			method: <span class="hljs-string">'DELETE'</span>,
+			headers: {
+				<span class="hljs-string">'Authorization'</span>: <span class="hljs-string">'Bearer '</span> + token,
+				<span class="hljs-string">'Accept'</span>: <span class="hljs-string">'application/json'</span>,
+				<span class="hljs-string">'X-Datacore-Project'</span>: <span class="hljs-string">'oasis.'</span> + project
+			},
+			body: data
+		},
+		<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err, res, body</span>) </span>{
+			<span class="hljs-keyword">if</span> (err) {
+				log.error(<span class="hljs-string">"Remote error in PutRequest() : "</span> + err);
+				callback(<span class="hljs-literal">true</span>, <span class="hljs-string">''</span>);
+			}
+			<span class="hljs-keyword">if</span> (res.statusCode == <span class="hljs-number">409</span> || res.statusCode == <span class="hljs-number">404</span> || res.statusCode == <span class="hljs-number">400</span>) {
+				log.error(<span class="hljs-string">"Bad request : "</span> + body);
+				callback(<span class="hljs-literal">true</span>, <span class="hljs-built_in">JSON</span>.parse(body));
+			}
+			<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (res.statusCode == <span class="hljs-number">204</span>)
+				callback(<span class="hljs-literal">false</span>, <span class="hljs-built_in">JSON</span>.parse(body));
 
-  				});
+		});
 };
-mo.DELRequest = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token,url,arg,project,callback</span>)
-</span>{
- 
-DelRequest_priv(token,<span class="hljs-string">'/dc/type/'</span>+url+<span class="hljs-string">'/'</span>+<span class="hljs-string">'?'</span>+arg,project,callback);
+mo.DELRequest = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token, url, arg, project, callback</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p>Del request : delet a resource</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+	DelRequest_priv(token, <span class="hljs-string">'/dc/type/'</span> + url + <span class="hljs-string">'/'</span> + <span class="hljs-string">'?'</span> + arg, project, callback);
 };
-mo.DELRequestModel = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token,url,arg,project,callback</span>)
-</span>{
- 
-DelRequest_priv(token,<span class="hljs-string">'/dc/type/dcmo:model_0/'</span>+url+<span class="hljs-string">'/'</span>+<span class="hljs-string">'?'</span>+arg,project,callback);
+mo.DELRequestModel = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token, url, arg, project, callback</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-26">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p>like DEL but for Model</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+	DelRequest_priv(token, <span class="hljs-string">'/dc/type/dcmo:model_0/'</span> + url + <span class="hljs-string">'/'</span> + <span class="hljs-string">'?'</span> + arg, project, callback);
 };
+
+<span class="hljs-comment">/* thanks to mark*/</span>
+   <span class="hljs-keyword">var</span> safeCharsRegexString = <span class="hljs-string">"0-9a-zA-Z"</span> + <span class="hljs-string">"\\$\\-_\\.\\+!\\*'\\(\\)"</span>; <span class="hljs-comment">// "$-_.()" + "+!*'";</span>
+   <span class="hljs-keyword">var</span> reservedCharsRegexString = <span class="hljs-string">"$&amp;+,/:;=@"</span> + <span class="hljs-string">"~"</span>; <span class="hljs-comment">// NOT ? and besides ~ is not encoded by Java URI</span>
+   <span class="hljs-keyword">var</span> pathComponentSafeCharsRegex = <span class="hljs-keyword">new</span> <span class="hljs-built_in">RegExp</span>(<span class="hljs-string">'['</span> + safeCharsRegexString + reservedCharsRegexString + <span class="hljs-string">']'</span>);
+mo.encodeUriPathComponent =   <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">pathCpt</span>) </span>{
+      <span class="hljs-keyword">var</span> res = <span class="hljs-string">''</span>;
+      <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> cInd <span class="hljs-keyword">in</span> pathCpt) {
+         <span class="hljs-keyword">var</span> c = pathCpt[cInd];
+         res += pathComponentSafeCharsRegex.test(c) ? c : <span class="hljs-built_in">encodeURIComponent</span>(c);
+      }
+      <span class="hljs-keyword">return</span> res;
+   }
+ <span class="hljs-comment">/**/</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
+              </div>
+              <p>This funcion try to get ALL !!!! REsource ID of a model /!\ Warging it can be very slow !!! do not use for ofen but sometime like by day</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>mo.GetRequestALLModelID = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token, url, arg, project, callback, head_add</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-28">&#182;</a>
+              </div>
+              <p>url : is the url after /dc/type/ see the playground.
+arg : the argument after the ? in the request
+Projet : the projet in ozwillo oasis.sandbox by exemple
+callback (err,result)
+head_add : to add some hearder on the request</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	
+	<span class="hljs-keyword">var</span> <span class="hljs-keyword">async</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">"async"</span>);
+	arg=(arg || <span class="hljs-string">""</span>)+<span class="hljs-string">'limit=250'</span>;
+	<span class="hljs-keyword">var</span> array = [];
+	<span class="hljs-keyword">var</span> next = <span class="hljs-literal">true</span>;
+	<span class="hljs-keyword">var</span> date = (<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(<span class="hljs-built_in">Date</span>.now())).toISOString();
+	
+
+	
+	<span class="hljs-keyword">async</span>.whilst(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{<span class="hljs-keyword">return</span> next;}, 
+					<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">callback</span>)
+					</span>{
+		
+					GetRequest_priv(<span class="hljs-string">'Bearer '</span> + token, conf.datacoreUrl+<span class="hljs-string">'/dc/type/'</span> + url + <span class="hljs-string">'?'</span> + arg+<span class="hljs-string">"&amp;dc:modified=&lt;"</span>+<span class="hljs-built_in">encodeURIComponent</span>(date), project, {<span class="hljs-string">'X-Datacore-View'</span>:<span class="hljs-string">'dc:modified'</span>}, 
+								 <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err,body</span>)
+								 </span>{
+									<span class="hljs-keyword">if</span>(err)
+									{
+									next=<span class="hljs-literal">false</span>;
+									log.error(<span class="hljs-string">"error in GetRequestALLModelID: "</span>+err);
+										callback(<span class="hljs-number">1</span>);
+									<span class="hljs-keyword">return</span>;
+									}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-29">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-29">&#182;</a>
+              </div>
+              <p>log.debug(“PASS WITH DATE : “+date);
+log.debug(“ADD: “+body.length +” ELEMENT”);</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>									array = array.concat(body);
+									<span class="hljs-keyword">if</span>(body==[] || body.length ==<span class="hljs-number">0</span>)
+									next=<span class="hljs-literal">false</span>;
+									<span class="hljs-keyword">else</span>
+									date = body[body.length-<span class="hljs-number">1</span>][<span class="hljs-string">"dc:modified"</span>];
+									callback(<span class="hljs-number">0</span>);
+								  });
+		
+					}
+					, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err</span>)</span>{callback(err,array);});
+	
+	
+	
+
+
+};
+
+
 
 mo.memoryCache = memoryCache;
 
@@ -632,7 +1022,8 @@ function Baserequest(token,url,project,method,callback)
 
 }
 
-*/</span><span class="hljs-comment">/*
+*/</span>
+<span class="hljs-comment">/*
 
 
 

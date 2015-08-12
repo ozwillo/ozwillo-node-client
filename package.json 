@@ -20,7 +20,8 @@
     "request": "*",
 	 "cache-manager" : "*",
 	 "simple-oauth2" : "*",
-	 "mongoose" : "*"
+	 "mongoose" : "*",
+	 "extend" : "*"
 
   },
 

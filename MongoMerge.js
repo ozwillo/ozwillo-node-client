@@ -13,6 +13,7 @@ var mongoose;
 var extend_mongoose;
 var util = require('util');
 var db ;
+var async = require("async");
 MongoServiceMerge = module.exports = function(obj)
 {
 
@@ -161,6 +162,9 @@ copyitem(model,datacore,mongoose,0);
 MongoServiceMerge.MergeData = function (debug)
 {
 	
+	if(conf.onlylog)
+	debug = true;
+	
 	// summary: 
 	//         this funtion merga data with datacore
 	//			it list model add with AddDatacoreModel
@@ -185,15 +189,19 @@ MongoServiceMerge.MergeData = function (debug)
 		//on retrouve les donner corespondant au model
 		
 		(function(m){
-		log.debug('Merge model :'+m+'\n');		//TODO MUST MUST THE INVERSE WE MUST "FOR" THE MONDODB and UPDATE DATACORE NOT FOR DATACORE 
-		parent.GetRequestModel(token,m,'limit=500','oasis.sandbox',
+		log.debug('Merge model :'+m+'\n');		//TODO MUST MUST THE INVERSE WE MUST "FOR" THE MONDODB and UPDATE DATACORE NOT "FOR" DATACORE  OR NOT ???
+		parent.GetRequestALLModelID(token,m,'','oasis.sandbox',
 			 function(err,dataCoreResource)
 			 {
 			if(err){return;} 
 
-			log.debug('dacacoreresurce:'+util.inspect(dataCoreResource));
-			for(var r of dataCoreResource)
+							log.debug("FUSION DE "+dataCoreResource.length+" ELEMENT");
+			//log.debug('dacacoreresurce:'+util.inspect(dataCoreResource));
+			async.eachLimit(dataCoreResource,25,
+			function(r,done)
 			{
+				
+
 				
 				
 				(function (r){
@@ -204,14 +212,15 @@ MongoServiceMerge.MergeData = function (debug)
 				var mondodbmodel = mongoose.model(m);
 				mondodbmodel.findOne({'@id':r['@id']},
 											function(err,datamongo){	
-					log.debug('Merge resource :'+r['@id']+'\n');	
-					if(err){log.error('error : '+err);return;}
+					log.debug('TEST :'+r['@id']);
+					
+					if(err){log.error('error with '+r['@id']+' : '+err);done(err);return;}
 
 					//log.debug(datamongo);
 					if(datamongo == null)//not found we add him
 					{
 						
-						parent.GetRequestURI(token,r['@id'],'','oasis.sandbox',function(err,r){
+						parent.GetRequestURI(token,r['@id'],'oasis.sandbox',function(err,r){
 								if(err){return;}
 							log.debug('resource not found in mongodB:'+r['@id']+'\n');	
 	
@@ -225,11 +234,14 @@ MongoServiceMerge.MergeData = function (debug)
 							log.debug(util.inspect(instance));
 							}
 							else
-							instance.save(function (err) {
-								if(err)
-									log.error(err);
-								return;
-							});
+							{
+								instance.save(function (err) {
+									if(err)
+										log.error(err);
+									return;
+								});
+							}
+							done();
 						});
 						return;
 					}
@@ -250,7 +262,7 @@ MongoServiceMerge.MergeData = function (debug)
 								if(err)log.error(err);
 								return;
 							});
-								
+							done();	
 							});
 						}
 						else if(r['o:version']<datamongo['o:version'])
@@ -263,9 +275,9 @@ MongoServiceMerge.MergeData = function (debug)
 							datalaunch['@id'] = r['@id'];
 							datalaunch['o:version']= r['o:version'];
 							
-							log.debug('we launch :'+util.inspect(datalaunch)+"\n in  string: "+JSON.stringify(datalaunch));	
+							//log.debug('we launch :'+util.inspect(datalaunch)+"\n in  string: "+JSON.stringify(datalaunch));	
 						
-							
+							done();
 							if(debug)
 							{
 							}
@@ -275,12 +287,15 @@ MongoServiceMerge.MergeData = function (debug)
 														{
 														if(err){log.error(err+" : "+body);return;}
 														log.debug(util.inspect(body));
+								
 								return;
 							});
 						}
 						else{
-							log.debug('our resource is uptodate');
-							/*nothing to do*/}
+							//log.debug('our resource is uptodate');
+							/*nothing to do*/
+							done();
+						}
 
 					}
 
@@ -288,7 +303,11 @@ MongoServiceMerge.MergeData = function (debug)
 				);
 				})(r);
 
-			}
+			},function(err){
+			
+				if(err)log.error(err);
+				log.debug("All done !!");
+			});
 			
 			//now all data we existe in datacore isuptodate now merge our data with the data core(note this is idiot and very hard...)
 		// when we add data to mongo is automaticelle add to datacore...
@@ -298,7 +317,7 @@ MongoServiceMerge.MergeData = function (debug)
 			{
 				idindatacore.push(r['@id']);
 			}
-			log.debug(m+" WHAT DO DO : "+util.inspect(idindatacore));
+			//log.debug(m+" WHAT DO DO : "+util.inspect(idindatacore));
 			
 				var mondodbmodel = mongoose.model(m);
 				mondodbmodel.find({'@id':{ $nin:idindatacore }},
@@ -350,7 +369,7 @@ MongoServiceMerge.MergeData = function (debug)
 	
 	});
 }
-	
+	//This class must be inherit , it represnt a model in Datacore and in mongoose
 	 function DatacoreResource() {
 
         this.ListAtribut = null;
@@ -366,6 +385,8 @@ MongoServiceMerge.MergeData = function (debug)
         this.Shem[this.Version] = Number;
     }
 
+
+//This funtion save the object in the data to the URI/ID, orther argument is array pass in the same ordrer thar ListAtribut
     DatacoreResource.prototype.save = function(callbackend,mod, ID) {
         var arguments_save = arguments;
        var self = this;
@@ -407,6 +428,12 @@ MongoServiceMerge.MergeData = function (debug)
             }
             log.debug("prei : " + util.inspect(prei));
 
+			  
+			  if(conf.onlylog)
+			  {
+				callbackend(0);
+			  return;
+			  }
             if (!mod) {
                 var i = new self.Model(prei);
                i.save(function(err) {
@@ -439,6 +466,9 @@ MongoServiceMerge.MergeData = function (debug)
         }
     }
     
+	 
+	 //This function call the getData children function and send and save is return.
+	 // arg is pass to getData
     DatacoreResource.prototype.WriteFlux = function(arg,callback)
     {
     	var self=this;

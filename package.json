@@ -1,6 +1,6 @@
 {
   "name": "OzwilloUtil",
-  "version": "0.1",
+  "version": "0.1.0",
   "description": "Some tool to use ozwillo, we can find Oauth2.0 authentification and datacore merge tool",
   "author": "Benjamin <benjamin.girard@openwide.fr>",
   "main": "OzwiloUtil.js",

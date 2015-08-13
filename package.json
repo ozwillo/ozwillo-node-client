@@ -21,7 +21,8 @@
 	 "cache-manager" : "*",
 	 "simple-oauth2" : "*",
 	 "mongoose" : "*",
-	 "extend" : "*"
+	 "extend" : "*",
+	 "locks" : "*"
 
   },
 

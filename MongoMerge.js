@@ -53,7 +53,8 @@ conf=conff;
 
 var DCModelList = [];
 MongoServiceMerge.AddDatacoreModel =  function(name,shema)
-{	// summary:
+{	
+	// summary:
 	// 			Use this function add model on your mongoose which be merge with datacore.
 	// shema : 
 	//         must contain    '@id'   : { type: String ,unique:true,required:true}
@@ -107,8 +108,7 @@ MongoServiceMerge.PutDataCore = function(token,model,data,callback)
 	
 	var datacore = {};
 	MongoServiceMerge.MongooseToDatacore(model,data,datacore);
-
-	
+		
 	
 	log.debug("PUT:"+JSON.stringify(datacore));
 	log.debug('modelName:'+model.modelName);
@@ -131,17 +131,17 @@ function copyitem(model,from,to,todatacore){
 				return;
 			if(model.schema.paths[key].instance=='Mixed')
 			{
-				if(from[key])
+				if(from[key] || from[key]===0)
 				{
-				if(todatacore)
-				to[key]=JSON.stringify(from[key]);
-				else
-				to[key]=JSON.parse(from[key]); 
+					if(todatacore)
+					to[key]=JSON.stringify(from[key]);
+					else
+					to[key]=JSON.parse(from[key]); 
 				}
 			}
 			else
 			{
-				if(from[key])
+				if(from[key] || from[key]===0)
 				to[key]=from[key];
 			}
 
@@ -159,37 +159,12 @@ MongoServiceMerge.DatacoreToMongoose = function(model,datacore,mongoose)
 copyitem(model,datacore,mongoose,0);
 }
 
-MongoServiceMerge.MergeData = function (debug)
-{
-	
-	if(conf.onlylog)
-	debug = true;
-	
-	// summary: 
-	//         this funtion merga data with datacore
-	//			it list model add with AddDatacoreModel
-	//			and merge exiting data we use verstion field
-	//  This funcion do not post data on datacore but only make update and postg on mongodb locale.
-	
-	
-	
-	/**/
-	/*	TODO */ 
-	
+MongoServiceMerge.MergeDataAModel = function (m,debug)
+		{
 	parent.Fakelogin.getTokenKeepInMind(function (token){
+
 	
-	log.debug('Merge data begin : '+DCModelList);	
-	for(var m of DCModelList)
-	{
-
-		//pour chaque resource du datacore du model m
-
-		//var idModel=conf.datacoreUrl+'/dc/type/dcmo:model_0/'+m;
-
-		//on retrouve les donner corespondant au model
-		
-		(function(m){
-		log.debug('Merge model :'+m+'\n');		//TODO MUST MUST THE INVERSE WE MUST "FOR" THE MONDODB and UPDATE DATACORE NOT "FOR" DATACORE  OR NOT ???
+		log.debug('Merge model :'+m);		//TODO MUST MUST THE INVERSE WE MUST "FOR" THE MONDODB and UPDATE DATACORE NOT "FOR" DATACORE  OR NOT ???
 		parent.GetRequestALLModelID(token,m,'','oasis.sandbox',
 			 function(err,dataCoreResource)
 			 {
@@ -247,12 +222,20 @@ MongoServiceMerge.MergeData = function (debug)
 					}
 					else
 					{
-						if(r['o:version']>datamongo['o:version'])//datacore plus ajour
+						
+						if(!datamongo['o:version'] || r['o:version']>datamongo['o:version'])//datacore plus ajour
 						{
 							log.debug('our resource is older : '+r['@id']);
 
-							parent.GetRequestURI(token,r['@id'],'','oasis.sandbox',function(err,r){
+							parent.GetRequestURI(token,r['@id'],'oasis.sandbox',function(err,r){
+								
+							if(err){log.err(err);done();
+									  return;}
+							
+							
+								
 							MongoServiceMerge.DatacoreToMongoose(mondodbmodel,r,datamongo);
+								
 							if(debug)
 							{
 							log.debug(util.inspect(datamongo));
@@ -363,11 +346,44 @@ MongoServiceMerge.MergeData = function (debug)
 
 	
 			},{'X-Datacore-View':' '});
-		})(m);
+		
+				});	
+		};
+
+
+
+
+MongoServiceMerge.MergeData = function (debug)
+{
+	
+	if(conf.onlylog)
+	debug = true;
+	
+	// summary: 
+	//         this funtion merga data with datacore
+	//			it list model add with AddDatacoreModel
+	//			and merge exiting data we use verstion field
+	//  This funcion do not post data on datacore but only make update and postg on mongodb locale.
+	
+	
+	
+	/**/
+	/*	TODO */ 
+	
+	log.debug('Merge data begin : '+DCModelList);	
+	for(var m of DCModelList)
+	{
+
+		//pour chaque resource du datacore du model m
+
+		//var idModel=conf.datacoreUrl+'/dc/type/dcmo:model_0/'+m;
+
+		//on retrouve les donner corespondant au model
+		MongoServiceMerge.MergeDataAModel(m,data);
 			
 	}
 	
-	});
+
 }
 	//This class must be inherit , it represnt a model in Datacore and in mongoose
 	 function DatacoreResource() {
@@ -459,8 +475,9 @@ MongoServiceMerge.MergeData = function (debug)
                     if (err) log.error("cant save:" + err);
                     callbackend(err);
                 });
+						
                 parent.Fakelogin.getTokenKeepInMind(function(token) {
-			          MongoServiceMerge.PutDataCore(token, self.Model, prei);
+			          MongoServiceMerge.PutDataCore(token, self.Model, prei,function(){},0);
 			    });
             }
         }

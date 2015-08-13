@@ -140,7 +140,7 @@ conf=conff;
 
 <span class="hljs-keyword">var</span> DCModelList = [];
 MongoServiceMerge.AddDatacoreModel =  <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">name,shema</span>)
-</span>{	<span class="hljs-comment">// summary:</span></pre></div></div>
+</span>{</pre></div></div>
             
         </li>
         
@@ -151,8 +151,9 @@ MongoServiceMerge.AddDatacoreModel =  <span class="hljs-function"><span class="h
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <pre><code>        Use <span class="hljs-keyword">this</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">add</span> <span class="hljs-title">model</span> <span class="hljs-title">on</span> <span class="hljs-title">your</span> <span class="hljs-title">mongoose</span> <span class="hljs-title">which</span> <span class="hljs-title">be</span> <span class="hljs-title">merge</span> <span class="hljs-title">with</span> <span class="hljs-title">datacore</span>.</span>
-</code></pre><p>shema : 
+              <p>summary:
+            Use this function add model on your mongoose which be merge with datacore.
+shema : 
         must contain    ‘@id’   : { type: String ,unique:true,required:true}
 and  ‘o:version’    : Number </p>
 
@@ -231,8 +232,7 @@ MongoServiceMerge.PutDataCore = <span class="hljs-function"><span class="hljs-ke
 	
 	<span class="hljs-keyword">var</span> datacore = {};
 	MongoServiceMerge.MongooseToDatacore(model,data,datacore);
-
-	
+		
 	
 	log.debug(<span class="hljs-string">"PUT:"</span>+<span class="hljs-built_in">JSON</span>.stringify(datacore));
 	log.debug(<span class="hljs-string">'modelName:'</span>+model.modelName);
@@ -255,17 +255,17 @@ MongoServiceMerge.PutDataCore = <span class="hljs-function"><span class="hljs-ke
 				<span class="hljs-keyword">return</span>;
 			<span class="hljs-keyword">if</span>(model.schema.paths[key].instance==<span class="hljs-string">'Mixed'</span>)
 			{
-				<span class="hljs-keyword">if</span>(from[key])
+				<span class="hljs-keyword">if</span>(from[key] || from[key]===<span class="hljs-number">0</span>)
 				{
-				<span class="hljs-keyword">if</span>(todatacore)
-				to[key]=<span class="hljs-built_in">JSON</span>.stringify(from[key]);
-				<span class="hljs-keyword">else</span>
-				to[key]=<span class="hljs-built_in">JSON</span>.parse(from[key]); 
+					<span class="hljs-keyword">if</span>(todatacore)
+					to[key]=<span class="hljs-built_in">JSON</span>.stringify(from[key]);
+					<span class="hljs-keyword">else</span>
+					to[key]=<span class="hljs-built_in">JSON</span>.parse(from[key]); 
 				}
 			}
 			<span class="hljs-keyword">else</span>
 			{
-				<span class="hljs-keyword">if</span>(from[key])
+				<span class="hljs-keyword">if</span>(from[key] || from[key]===<span class="hljs-number">0</span>)
 				to[key]=from[key];
 			}
 
@@ -309,83 +309,12 @@ MongoServiceMerge.DatacoreToMongoose = <span class="hljs-function"><span class="
             <div class="content"><div class='highlight'><pre>copyitem(model,datacore,mongoose,<span class="hljs-number">0</span>);
 }
 
-MongoServiceMerge.MergeData = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">debug</span>)
-</span>{
-	
-	<span class="hljs-keyword">if</span>(conf.onlylog)
-	debug = <span class="hljs-literal">true</span>;</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-8">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
-              </div>
-              <p>summary: 
-        this funtion merga data with datacore
-        it list model add with AddDatacoreModel
-        and merge exiting data we use verstion field
- This funcion do not post data on datacore but only make update and postg on mongodb locale.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>	
-	
-	
-	<span class="hljs-comment">/**/</span>
-	<span class="hljs-comment">/*	TODO */</span> 
-	
+MongoServiceMerge.MergeDataAModel = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">m,debug</span>)
+		</span>{
 	parent.Fakelogin.getTokenKeepInMind(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">token</span>)</span>{
+
 	
-	log.debug(<span class="hljs-string">'Merge data begin : '</span>+DCModelList);	
-	<span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> m <span class="hljs-keyword">of</span> DCModelList)
-	{</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-9">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
-              </div>
-              <p>pour chaque resource du datacore du model m</p>
-
-            </div>
-            
-        </li>
-        
-        
-        <li id="section-10">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
-              </div>
-              <p>var idModel=conf.datacoreUrl+’/dc/type/dcmo:model_0/‘+m;</p>
-
-            </div>
-            
-        </li>
-        
-        
-        <li id="section-11">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
-              </div>
-              <p>on retrouve les donner corespondant au model</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>		
-		(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">m</span>)</span>{
-		log.debug(<span class="hljs-string">'Merge model :'</span>+m+<span class="hljs-string">'\n'</span>);		<span class="hljs-comment">//TODO MUST MUST THE INVERSE WE MUST "FOR" THE MONDODB and UPDATE DATACORE NOT "FOR" DATACORE  OR NOT ???</span>
+		log.debug(<span class="hljs-string">'Merge model :'</span>+m);		<span class="hljs-comment">//TODO MUST MUST THE INVERSE WE MUST "FOR" THE MONDODB and UPDATE DATACORE NOT "FOR" DATACORE  OR NOT ???</span>
 		parent.GetRequestALLModelID(token,m,<span class="hljs-string">''</span>,<span class="hljs-string">'oasis.sandbox'</span>,
 			 <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err,dataCoreResource</span>)
 			 </span>{
@@ -396,11 +325,11 @@ MongoServiceMerge.MergeData = <span class="hljs-function"><span class="hljs-keyw
         </li>
         
         
-        <li id="section-12">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
               <p>log.debug(‘dacacoreresurce:’+util.inspect(dataCoreResource));</p>
 
@@ -418,11 +347,11 @@ MongoServiceMerge.MergeData = <span class="hljs-function"><span class="hljs-keyw
         </li>
         
         
-        <li id="section-13">
+        <li id="section-9">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>var r= dataCoreResource[0];</p>
 
@@ -431,11 +360,11 @@ MongoServiceMerge.MergeData = <span class="hljs-function"><span class="hljs-keyw
         </li>
         
         
-        <li id="section-14">
+        <li id="section-10">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>on compare les vertion des donné
 on merge en cas de besoin</p>
@@ -452,11 +381,11 @@ on merge en cas de besoin</p>
         </li>
         
         
-        <li id="section-15">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>log.debug(datamongo);</p>
 
@@ -492,12 +421,20 @@ on merge en cas de besoin</p>
 					}
 					<span class="hljs-keyword">else</span>
 					{
-						<span class="hljs-keyword">if</span>(r[<span class="hljs-string">'o:version'</span>]&gt;datamongo[<span class="hljs-string">'o:version'</span>])<span class="hljs-comment">//datacore plus ajour</span>
+						
+						<span class="hljs-keyword">if</span>(!datamongo[<span class="hljs-string">'o:version'</span>] || r[<span class="hljs-string">'o:version'</span>]&gt;datamongo[<span class="hljs-string">'o:version'</span>])<span class="hljs-comment">//datacore plus ajour</span>
 						{
 							log.debug(<span class="hljs-string">'our resource is older : '</span>+r[<span class="hljs-string">'@id'</span>]);
 
-							parent.GetRequestURI(token,r[<span class="hljs-string">'@id'</span>],<span class="hljs-string">''</span>,<span class="hljs-string">'oasis.sandbox'</span>,<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err,r</span>)</span>{
+							parent.GetRequestURI(token,r[<span class="hljs-string">'@id'</span>],<span class="hljs-string">'oasis.sandbox'</span>,<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">err,r</span>)</span>{
+								
+							<span class="hljs-keyword">if</span>(err){log.err(err);done();
+									  <span class="hljs-keyword">return</span>;}
+							
+							
+								
 							MongoServiceMerge.DatacoreToMongoose(mondodbmodel,r,datamongo);
+								
 							<span class="hljs-keyword">if</span>(debug)
 							{
 							log.debug(util.inspect(datamongo));
@@ -523,11 +460,11 @@ on merge en cas de besoin</p>
         </li>
         
         
-        <li id="section-16">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>log.debug(‘we launch :’+util.inspect(datalaunch)+”\n in  string: “+JSON.stringify(datalaunch));    </p>
 
@@ -553,11 +490,11 @@ on merge en cas de besoin</p>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
+                <a class="pilcrow" href="#section-13">&#182;</a>
               </div>
               <p>log.debug(‘our resource is uptodate’);</p>
 
@@ -582,11 +519,11 @@ on merge en cas de besoin</p>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-14">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
+                <a class="pilcrow" href="#section-14">&#182;</a>
               </div>
               <p>now all data we existe in datacore isuptodate now merge our data with the data core(note this is idiot and very hard…)
 when we add data to mongo is automaticelle add to datacore…</p>
@@ -603,11 +540,11 @@ when we add data to mongo is automaticelle add to datacore…</p>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-15">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
+                <a class="pilcrow" href="#section-15">&#182;</a>
               </div>
               <p>log.debug(m+” WHAT DO DO : “+util.inspect(idindatacore));</p>
 
@@ -638,11 +575,11 @@ when we add data to mongo is automaticelle add to datacore…</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-16">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <p>log.debug(‘We send :’+datacore[‘@id’]+’on datacore’);    </p>
 
@@ -657,11 +594,11 @@ when we add data to mongo is automaticelle add to datacore…</p>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-21">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>log.debug(‘POST RESOURCE’+util.inspect(PostResource));</p>
 
@@ -682,11 +619,90 @@ when we add data to mongo is automaticelle add to datacore…</p>
 
 	
 			},{<span class="hljs-string">'X-Datacore-View'</span>:<span class="hljs-string">' '</span>});
-		})(m);
+		
+				});	
+		};
+
+
+
+
+MongoServiceMerge.MergeData = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">debug</span>)
+</span>{
+	
+	<span class="hljs-keyword">if</span>(conf.onlylog)
+	debug = <span class="hljs-literal">true</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>summary: 
+        this funtion merga data with datacore
+        it list model add with AddDatacoreModel
+        and merge exiting data we use verstion field
+ This funcion do not post data on datacore but only make update and postg on mongodb locale.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>	
+	
+	
+	<span class="hljs-comment">/**/</span>
+	<span class="hljs-comment">/*	TODO */</span> 
+	
+	log.debug(<span class="hljs-string">'Merge data begin : '</span>+DCModelList);	
+	<span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> m <span class="hljs-keyword">of</span> DCModelList)
+	{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-19">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-19">&#182;</a>
+              </div>
+              <p>pour chaque resource du datacore du model m</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p>var idModel=conf.datacoreUrl+’/dc/type/dcmo:model_0/‘+m;</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>on retrouve les donner corespondant au model</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>		MongoServiceMerge.MergeDataAModel(m,data);
 			
 	}
 	
-	});
+
 }</pre></div></div>
             
         </li>
@@ -802,8 +818,9 @@ when we add data to mongo is automaticelle add to datacore…</p>
                     <span class="hljs-keyword">if</span> (err) log.error(<span class="hljs-string">"cant save:"</span> + err);
                     callbackend(err);
                 });
+						
                 parent.Fakelogin.getTokenKeepInMind(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">token</span>) </span>{
-			          MongoServiceMerge.PutDataCore(token, self.Model, prei);
+			          MongoServiceMerge.PutDataCore(token, self.Model, prei,<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{},<span class="hljs-number">0</span>);
 			    });
             }
         }

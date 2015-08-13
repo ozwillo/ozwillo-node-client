@@ -26,7 +26,7 @@ var cacheManager = require('cache-manager');
 var memoryCache = cacheManager.caching({
 	store: 'memory',
 	max: 100,
-	ttl: 1000 /*seconds*/
+	ttl: 60 /*seconds*/
 });
 var extend = require('extend');
 
@@ -223,13 +223,13 @@ function GetRequest_priv(Authorization, url, project, headers_add, callback) {
 			}
 			else if (res.statusCode == 404 || res.statusCode == 400) {
 				log.error("Bad request : " + res.body);
-				callback(res, JSON.parse(body));
+				callback(res, body);
 			}
 			else if (res.statusCode == 200)
 				callback(null, JSON.parse(body));
 			else {
 				log.error("Bad code : " + res.statusCode+" : "+ url + ' : ' + res.body);
-				callback(res,JSON.parse(body));
+				callback(res.body,body);
 			}
 		});
 };
@@ -246,9 +246,7 @@ mo.GetRequestModel = function(token, url, arg, project, callback, head_add) {
 	
 	memoryCache.wrap(url + arg + project, function(cacheCallback) {
 		GetRequest_priv('Bearer ' + token, conf.datacoreUrl+'/dc/type/' + url + '?' + arg, project, head_add, cacheCallback);
-	}, {
-		ttl: 5
-	}, callback);
+	}, {}, callback);
 };
 
 // return a REsource with the spesified URI 
@@ -266,7 +264,6 @@ URI = conf.datacoreUrl+URI.substring('http://data.ozwillo.com/'.length);
 	memoryCache.wrap('' + URI + project, function(cacheCallback) {
 		GetRequest_priv('Bearer ' + token, URI, project, head_add, cacheCallback);
 	}, {
-		ttl: 5
 	}, callback);
 };
 
@@ -282,7 +279,6 @@ mo.GetRequestTypeAPP = function(basic, url, arg, project, callback, head_add) {
 	memoryCache.wrap(url + arg + project, function(cacheCallback) {
 		GetRequest_priv('Basic ' + basic, conf.datacoreUrl+'/dc/type/' + url + '?' + arg, project, head_add, cacheCallback);
 	}, {
-		ttl: 5
 	}, callback);
 };
 
@@ -295,7 +291,6 @@ mo.GetRequesttype = function(token, url, arg, project, callback, head_add) {
 	memoryCache.wrap(url + arg + project, function(cacheCallback) {
 		GetRequest_priv('Bearer ' + token, conf.datacoreUrl+'/dc/' + url + '?' + arg, project, head_add, cacheCallback);
 	}, {
-		ttl: 5
 	}, callback);
 };
 
@@ -307,7 +302,6 @@ mo.GetRequestModelSpecific = function(token, url, uri, arg, project, callback, h
 	memoryCache.wrap(url + uri + arg + project, function(cacheCallback) {
 		GetRequest_priv('Bearer ' + token, conf.datacoreUrl+'/dc/type/' + url + '/' + uri + '?' + arg, project, head_add, cacheCallback);
 	}, {
-		ttl: 5
 	}, callback);
 };
 
@@ -317,7 +311,6 @@ mo.GetRequestModelDef = function(token, url, uri, arg, project, callback, head_a
 	memoryCache.wrap(url + uri + arg + project, function(cacheCallback) {
 		GetRequest_priv('Bearer ' + token, conf.datacoreUrl+'/dc/type/dcmo:model_0/' + url + '/' + uri + '?' + arg, project, head_add, cacheCallback);
 	}, {
-		ttl: 5
 	}, callback);
 };
 mo.GetRequestMixInDef = function(token, url, uri, arg, project, callback, head_add) {
@@ -327,7 +320,6 @@ mo.GetRequestMixInDef = function(token, url, uri, arg, project, callback, head_a
 	memoryCache.wrap(url + uri + arg + project, function(cacheCallback) {
 		GetRequest_priv('Bearer ' + token, conf.datacoreUrl+'/dc/type/dcmi:mixin_0/' + url + '/' + uri + '?' + arg, project, head_add, cacheCallback);
 	}, {
-		ttl: 5
 	}, callback);
 };
 
@@ -362,7 +354,7 @@ function PostRequest_priv(token, url, project, data, callback) {
 			}
 			else if (res.statusCode == 404 || res.statusCode == 400 || res.statusCode == 200 || res.statusCode == 500 || res.statusCode == 409) {
 				log.error("Bad request : " + body);
-				callback(true, JSON.parse(body));
+				callback(true, body);
 				
 			}
 			else if (res.statusCode == 201)
@@ -485,7 +477,7 @@ function DelRequest_priv(token, url, project, callback) {
 			}
 			if (res.statusCode == 409 || res.statusCode == 404 || res.statusCode == 400) {
 				log.error("Bad request : " + body);
-				callback(true, JSON.parse(body));
+				callback(true, body);
 			}
 			else if (res.statusCode == 204)
 				callback(false, JSON.parse(body));

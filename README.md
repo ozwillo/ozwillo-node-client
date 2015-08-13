@@ -1,6 +1,9 @@
 
 OZWILLO-NODE-CLIENT http://www.ozwillo.com/ 
-https://github.com/ozwillo/ozwillo-node-client Copyright (c) 2013-2015 Open Wide - http://www.openwide.fr
+https://github.com/ozwillo/ozwillo-node-client Copyright (c) 2015 Open Wide - http://www.openwide.fr
+
+
+has been develop with node 0.12.7
 
 
 OzwilloUtil(Ozwillo node client) is a set of tool to use ozwillo.

@@ -70,20 +70,49 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <p>OZWILLO-NODE-CLIENT <a href="http://www.ozwillo.com/">http://www.ozwillo.com/</a> 
-<a href="https://github.com/ozwillo/ozwillo-node-client">https://github.com/ozwillo/ozwillo-node-client</a> Copyright (c) 2015 Open Wide - <a href="http://www.openwide.fr">http://www.openwide.fr</a></p>
-<p>has been develop with node 0.12.7</p>
-<p>OzwilloUtil(Ozwillo node client) is a set of tool to use ozwillo.
-Today you can find three parts : </p>
-<ul>
-<li>FakeLogin to get a token with your account.</li>
-<li>Connection : tool for getting a token from a user</li>
-<li>MongoServiceMerge : tool which help to merge data stored in mondodb with the datacore</li>
-</ul>
-<p>today all modules are experimental and not well documented.</p>
-<p>take a look to docs dir !!!</p>
-<p>Sample_token : is a script to have token</p>
-<p><code>nodejs Sample_token.js confile.json</code></p>
+
+<h2><p> OZWILLO-NODE-CLIENT<p></h2>
+
+<ul>- <a href="http://www.ozwillo.com/">http://www.ozwillo.com/</a></ul>
+<ul>- <a href="https://github.com/ozwillo/ozwillo-node-client">https://github.com/ozwillo/ozwillo-node-client</a></ul>
+
+<p>Copyright (c) 2015 Open Wide - http://www.openwide.fr</p>
+
+<h3><p> Description </p></h3>
+<p>
+OzwilloUtil (Ozwillo node client) is a set of tool to use ozwillo.
+Today this application contains three main app modules : 
+</p>
+<ul>- FakeLogin to get a token with your account.</ul>
+<ul>- Connection : tool for getting a token from a user</ul>
+<ul>- MongoServiceMerge : tool which help to merge data stored in mondodb with the datacore</ul>
+
+<p>NB. All modules are experimental and not well documented. Take a look to <em>docs</em> directory !!!</p>
+
+<h3> Requirements</h3>
+
+<p>It has been develop with node 0.12.7 (``nvm install 0.12.7``).</p>
+
+<p>To run this <em>node app</em> you needs the next <em>node_modules</em> (see dependencies in <em>package.json</em> file) :
+<ul>- util</ul>
+<ul>- cache-manager</ul>
+<ul>- extend</ul>
+<ul>- log4js</ul>
+<ul>- request</ul>
+<ul>- simple-oauth2</ul>
+<ul>- mongoose</ul>
+<ul>- locks</ul>
+
+<p>To import / install them, you can use <em>npm</em> : ``npm install`` <p>
+
+<h3> Use </h3>
+
+<p><b>Sample_token</b> is a script to have token. To run it you can use :<p>
+
+<p><em>node Sample_token.js ./confile.json</em></p>
+
+<p><em>Dont forget the</em> <b>./</b> <em>if the configuration file to be used is located in the current directory !!!</em></p>
+
 
             </div>
             

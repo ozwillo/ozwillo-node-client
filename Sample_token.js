@@ -4,7 +4,7 @@ var co = require('./OzwiloUtil')({
 	Fakelogin: true 
 });
 
-// If th user special a conffile (otherwise we use conf.json)
+// If the user specifies a config file (otherwise we use conf.json)
 if (process.argv.length > 2) {
 	co.setconf(process.argv[2]);
 }

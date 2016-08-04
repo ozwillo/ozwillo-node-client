@@ -5,27 +5,27 @@
   "author": "Benjamin <benjamin.girard@openwide.fr>",
   "main": "OzwiloUtil.js",
   "repository": {
-  "type": "git",
-  "url": "https://github.com/ozwillo/ozwillo-node-client"
-},
-
+    "type": "git",
+    "url": "https://github.com/ozwillo/ozwillo-node-client"
+  },
   "keywords": [
-  "Ozwillo",
-  "Oauth",
-  "datacore"
-],
+    "Ozwillo",
+    "Oauth",
+    "datacore"
+  ],
+  "engines": {
+    "node": ">=6.2.2"
+  },
   "dependencies": {
     "util": "*",
     "log4js": "*",
     "request": "*",
-	 "cache-manager" : "*",
-	 "simple-oauth2" : "*",
-	 "mongoose" : "*",
-	 "extend" : "*",
-	 "locks" : "*"
-
+    "cache-manager": "*",
+    "simple-oauth2": "*",
+    "mongoose": "*",
+    "extend": "*",
+    "locks": "*"
   },
-
   "private": true,
   "analyze": true,
   "license": "GPL"

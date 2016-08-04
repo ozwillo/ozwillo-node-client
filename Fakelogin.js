@@ -24,7 +24,7 @@ const FirefoxHeader = {
 };
 
 
-FakeLogin = module.exports = function(obj) {
+FakeLogin = module.exports = function (obj) {
 
 	log = obj.log;
 	request = obj.request;
@@ -35,11 +35,11 @@ FakeLogin = module.exports = function(obj) {
 	return module.exports;
 };
 
-FakeLogin.setconf = function(conff) {
+FakeLogin.setconf = function (conff) {
 	conf = conff;
 }
 
-FakeLogin.Fakelogin = function(callback) {
+FakeLogin.Fakelogin = function (callback) {
 	// summary:
 	//     This function simule a login on ozwillo acount.
 
@@ -71,7 +71,7 @@ FakeLogin.Fakelogin = function(callback) {
 	};
 	extend(options.headers, FirefoxHeader);
 	//log.debug("login options : ", options);
-	request(options, function(err, res, body) {
+	request(options, function (err, res, body) {
 		if (err) {
 			log.error("Remote error in login() : " + err);
 			return;
@@ -87,7 +87,7 @@ FakeLogin.Fakelogin = function(callback) {
 
 
 
-FakeLogin.getCodeFromKernel = function(callback) {
+FakeLogin.getCodeFromKernel = function (callback) {
 	// summary:
 	//     This funtion can get the Code from the kernel see OAuth2.0 
 	//     Fakelogin before
@@ -104,7 +104,7 @@ FakeLogin.getCodeFromKernel = function(callback) {
 		url: Authrequest.url,
 		method: 'GET',
 		followAllRedirects: false, // don't redirect to be able to extract code from Location header
-		followRedirect :false,
+		followRedirect: false,
 		headers: {
 			/*'Host': 'accounts.ozwillo-preprod.eu',*/
 			referer: conf.kernelBaseUrl + '/a/login',
@@ -116,7 +116,7 @@ FakeLogin.getCodeFromKernel = function(callback) {
 
 	//log.debug("getCodeFromKernel params : ", options);
 
-	request(options, function(err, res, body) {
+	request(options, function (err, res, body) {
 		// TODO approve if asked to
 		if (err) {
 			log.error("Remote error getCodeFromKernel : " + err);
@@ -162,7 +162,7 @@ FakeLogin.getCodeFromKernel = function(callback) {
 			extend(options2.headers, FirefoxHeader);
 
 
-			request(options2, function(err, res, body) {
+			request(options2, function (err, res, body) {
 
 
 				ReponceAuth(err, res, body, callback);
@@ -217,15 +217,15 @@ FakeLogin.getCodeFromKernel = function(callback) {
 
 
 
-FakeLogin.getToken_pure = function(code, callback) {
+FakeLogin.getToken_pure = function (code, callback) {
 	// summary:
 	//     This function get a token from code
 	// need a code
 	// note :  this function is a alias of getTokenOauth from Connection
-	
+
 	//log.debug("AQUISITION DU TOKEN\n\n");
 
-	Connection.getTokenOauth(code, function(err, token, id_token, tokenobj) {
+	Connection.getTokenOauth(code, function (err, token, id_token, tokenobj) {
 
 		if (err) {
 			log.error("Remote error in getToken() : " + err);
@@ -239,16 +239,16 @@ FakeLogin.getToken_pure = function(code, callback) {
 };
 
 
-FakeLogin.getToken = function(callback) {
+FakeLogin.getToken = function (callback) {
 
 	// summary:
 	//     This funtion recup a token and send it to callback all is do automatically
 
-	FakeLogin.Fakelogin(function() {
+	FakeLogin.Fakelogin(function () {
 		FakeLogin.getCodeFromKernel(
-			function(code) {
+			function (code) {
 
-				FakeLogin.getToken_pure(code, function(token, id_token, tokenobj) {
+				FakeLogin.getToken_pure(code, function (token, id_token, tokenobj) {
 					log.debug('**********TOKEN**********');
 					log.debug(util.inspect(tokenobj));
 					log.debug('**********TOKEN**********\n');
@@ -259,31 +259,29 @@ FakeLogin.getToken = function(callback) {
 }
 
 var token_keepmind = 0;
-FakeLogin.getTokenKeepInMind = function(callback) {
+FakeLogin.getTokenKeepInMind = function (callback) {
 	// summary:
-	//     Is like getToken but it keep the token in memory for the next call until the token expire
+	//     Is like getToken but it keep the token in memory for the next call until the token expires
+
+	mutex.lock(function () {
+		if (token_keepmind && token_keepmind.expired())
+			token_keepmind = 0;
+
+		if (!token_keepmind) {
+			FakeLogin.getToken(function (token, id_token, tokenobj) {
 
 
+				token_keepmind = tokenobj;
+				mutex.unlock();
+				callback(token, id_token, tokenobj);
+			});
 
-mutex.lock(function(){
-	if (token_keepmind && token_keepmind.expired())
-		token_keepmind = 0;
-
-	if (!token_keepmind) {
-		FakeLogin.getToken(function(token, id_token, tokenobj) {
-
-
-			token_keepmind = tokenobj;
+			return;
+		}
+		else {
 			mutex.unlock();
-			callback(token, id_token, tokenobj);
-		});
+			callback(token_keepmind.token.access_token, token_keepmind.token.id_token, token_keepmind);
+		}
 
-		return;
-	}
-	else {
-		mutex.unlock();
-		callback(token_keepmind.token.access_token, token_keepmind.token.id_token, token_keepmind);
-	}
-    
-});
+	});
 }

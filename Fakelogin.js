@@ -201,7 +201,9 @@ FakeLogin.getCodeFromKernel = function(callback) {
 				log.error("Bad response getCodeFromKernel, location without code : " + location);
 				return;
 			}
-			var code = location.substring(beforeLocationCodeIndex + beforeLocationCode.length);
+			var afterLocationCode = "&session_state=";
+			var afterLocationCodeIndex = location.indexOf(afterLocationCode);
+			var code = location.substring(beforeLocationCodeIndex + beforeLocationCode.length, afterLocationCodeIndex);
 			//	 log.debug("getCodeFromKernel body: ", body);
 
 			callback(code);

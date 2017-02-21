@@ -109,7 +109,8 @@ FakeLogin.getCodeFromKernel = function (callback) {
 			/*'Host': 'accounts.ozwillo-preprod.eu',*/
 			referer: conf.kernelBaseUrl + '/a/login',
 		},
-		jar: true
+		jar: true,
+		gzip: true
 	};
 
 	extend(options.headers, FirefoxHeader);

@@ -23,31 +23,29 @@ log=obj.log;
 request=obj.request;
 conf=obj.conf;
 
-oauth2 = require('simple-oauth2')(GETconfOauth2());
+oauth2 = require('simple-oauth2').create(getCredentialsConf(conf));
 	
 	return Connection;	
 };
 
+function getCredentialsConf(conf) {
 
-function GETconfOauth2()
-{
-
- return {
-		  clientID: conf.app_client_id,
-		  clientSecret: conf.app_client_secret,
-		  site: conf.kernelBaseUrl,
-	     useBasicAuthorizationHeader : true,
-		  authorizationPath: '/a/auth',
-		  tokenPath: '/a/token',
-	 	  revocationPath:'a/revoke'
-		};
-
-
+    return {
+        client: {
+            id: conf.app_client_id,
+            secret: conf.app_client_secret
+        },
+        auth: {
+            tokenHost: conf.kernelBaseUrl,
+            authorizePath: '/a/auth',
+            tokenPath: '/a/token',
+            revokePath: 'a/revoke'
+        },
+        options: {
+            useBasicAuthorizationHeader: true
+        }
+    }
 }
-
-
-
-
 
 function GETauthorizeURL()
 {
@@ -67,7 +65,7 @@ Connection.setconf = function(conff)
 {
 	delete oauth2;
 	conf=conff;
-	oauth2 = require('simple-oauth2')(GETconfOauth2());
+	oauth2 = require('simple-oauth2').create(getCredentialsConf(conf));
 }
 
 
@@ -81,7 +79,7 @@ Connection.requestAuth = function(plus)
 	log.debug("demande d'autentification connection to ozwillo\n");
 	var tmp=GETauthorizeURL();
 	extend(tmp, plus);
-	return {url:oauth2.authCode.authorizeURL(tmp),nonce:tmp.nonce};
+	return {url:oauth2.authorizationCode.authorizeURL(tmp),nonce:tmp.nonce};
 };
 
 Connection.CallbackCode = function(req)
@@ -99,7 +97,7 @@ Connection.CallbackCode = function(req)
 Connection.getTokenOauth = function(code,callbackToken)
 {
 
-		  oauth2.authCode.getToken({
+		  oauth2.authorizationCode.getToken({
 			 code: code,
 			 redirect_uri: conf.redirect_uri,
 			  grant_type: 'authorization_code'

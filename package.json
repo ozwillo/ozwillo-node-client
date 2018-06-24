@@ -24,9 +24,15 @@
     "simple-oauth2": "*",
     "mongoose": "*",
     "extend": "*",
-    "locks": "*"
+    "locks": "*",
+    "snyk": "^1.83.0"
   },
   "private": true,
   "analyze": true,
-  "license": "GPL"
+  "license": "GPL",
+  "scripts": {
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
+  },
+  "snyk": true
 }

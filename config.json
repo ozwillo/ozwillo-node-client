@@ -2,7 +2,7 @@
     "login": "youraccount@ozwillo-dev.eu",
     "password": "thepassordoftheaccount",
     "app_client_id": "idofclient",
-    "app_client_secret": "",
+    "app_client_secret": "secretofclient",
     "dc_client_id": "",
     "dc_client_secret": "",
     "kernelBaseUrl": "https://accounts.ozwillo-dev.eu",

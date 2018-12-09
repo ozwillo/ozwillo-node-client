@@ -18,14 +18,14 @@
   },
   "dependencies": {
     "util": "*",
-    "log4js": "*",
-    "request": "*",
+    "log4js": "2.0.0",
+    "request": "2.84.0",
     "cache-manager": "*",
-    "simple-oauth2": "*",
-    "mongoose": "*",
-    "extend": "*",
+    "simple-oauth2": "1.2.0",
+    "mongoose": "4.11.14",
+    "extend": "3.0.2",
     "locks": "*",
-    "snyk": "^1.83.0"
+    "snyk": "^1.110.2"
   },
   "private": true,
   "analyze": true,

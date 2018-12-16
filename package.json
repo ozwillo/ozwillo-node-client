@@ -22,7 +22,7 @@
     "request": "*",
     "cache-manager": "*",
     "simple-oauth2": "*",
-    "mongoose": "*",
+    "mongoose": "4.13.17",
     "extend": "*",
     "locks": "*",
     "snyk": "^1.83.0"

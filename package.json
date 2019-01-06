@@ -19,13 +19,13 @@
   "dependencies": {
     "util": "*",
     "log4js": "*",
-    "request": "*",
+    "request": "2.81.0",
     "cache-manager": "*",
-    "simple-oauth2": "*",
+    "simple-oauth2": "1.2.0",
     "mongoose": "*",
-    "extend": "*",
+    "extend": "3.0.2",
     "locks": "*",
-    "snyk": "^1.83.0"
+    "snyk": "^1.110.2"
   },
   "private": true,
   "analyze": true,

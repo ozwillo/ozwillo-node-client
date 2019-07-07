@@ -25,7 +25,7 @@
     "mongoose": "*",
     "extend": "*",
     "locks": "*",
-    "snyk": "^1.83.0"
+    "snyk": "^1.192.3"
   },
   "private": true,
   "analyze": true,
